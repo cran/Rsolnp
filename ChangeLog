@@ -1,0 +1,21 @@
+2010-03-10  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.0
+	* Release version for CRAN
+	* Added a function to generate random starting parameters and allow 
+	for multiple restarts of the solver.
+	* Some more benchmark problems to test the gosolnp function.
+		
+2009-09-15  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 0.3.
+	* Changes to function inputs and benchmark suite and method
+	of function evaluation.
+	* Minor Fixes
+	* More Checks to input functions
+	
+2009-05-21  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 0.2.
+	* Benchmark Problem suite created with more problems added.
+
+2009-05-14  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 0.1.
+	* First upload of Rsolnp.

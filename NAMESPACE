@@ -1,0 +1,4 @@
+export("solnp")
+export("gosolnp")
+export("benchmark")
+export("benchmarkids")
