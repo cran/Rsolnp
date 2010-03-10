@@ -11,7 +11,7 @@ method solver (SQP based solver).}
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
 Version: \tab 1\cr
-Date: \tab 2010-03-01\cr
+Date: \tab 2010-03-10\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm\cr 
