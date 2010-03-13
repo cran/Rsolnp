@@ -92,8 +92,8 @@
 .safefun = function(pars, fun, ...){
 	v  = fun(pars, ...)
 	if(is.na(v) | !is.finite(v) | is.nan(v)) {
-	warning(paste("\nsolnp-->warning: ", v , " detected in function call...check your function\n", sep = ""), immediate. = TRUE)
-	v = 1e10
+		warning(paste("\nsolnp-->warning: ", v , " detected in function call...check your function\n", sep = ""), immediate. = FALSE)
+		v = 1e24
 	}
 	v
 }
@@ -297,8 +297,8 @@
 		ans$rho = 1
 		ans$outer.iter = 400
 		ans$inner.iter = 800
-		ans$delta = 1.0e-8
-		ans$tol = 1.0e-6
+		ans$delta = 1.0e-7
+		ans$tol = 1.0e-8
 		ans$trace = 1
 	} else{
 		npar = tolower(names(unlist(control)))
@@ -306,8 +306,8 @@
 		if(any(substr(npar, 1, 3) == "rho")) ans$rho = as.numeric(params["rho"]) else ans$rho = 1
 		if(any(substr(npar, 1, 10) == "outer.iter")) ans$outer.iter = as.numeric(params["outer.iter"]) else ans$outer.iter = 400
 		if(any(substr(npar, 1, 10) == "inner.iter")) ans$inner.iter = as.numeric(params["inner.iter"]) else ans$inner.iter = 800
-		if(any(substr(npar, 1, 5) == "delta")) ans$delta = as.numeric(params["delta"]) else ans$delta = 1.0e-8
-		if(any(substr(npar, 1, 3) == "tol")) ans$tol = as.numeric(params["tol"]) else ans$tol = 1.0e-6
+		if(any(substr(npar, 1, 5) == "delta")) ans$delta = as.numeric(params["delta"]) else ans$delta = 1.0e-7
+		if(any(substr(npar, 1, 3) == "tol")) ans$tol = as.numeric(params["tol"]) else ans$tol = 1.0e-8
 		if(any(substr(npar, 1, 5) == "trace")) ans$trace = as.numeric(params["trace"]) else ans$trace = 1
 	}
 	return(ans)
