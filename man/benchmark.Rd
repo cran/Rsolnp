@@ -41,6 +41,7 @@ Alexios Ghalanos and Stefan Theussl\cr
 Y.Ye (original matlab version of solnp)
 }
 \examples{
+\dontrun{
 benchmarkids()
 benchmark(id = "Powell")
 benchmark(id = "Alkylation")
@@ -54,5 +55,6 @@ benchmark(id = "Permutation")
 # accessing the description
 test = benchmark(id = "Entropy")
 attr(test, "description")
+}
 }
 \keyword{optimize}

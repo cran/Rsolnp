@@ -197,7 +197,9 @@
 				# t( a %*% diag( as.numeric(dx) ) ) gives [(np+nc + 1 (or more) x nc]
 				# dx * t(cx) dot product of columnvectors
 				# qr.solve returns [nc x 1]
-				y = qr.solve( t( a %*% diag( as.numeric(dx) ) ), dx * t(cx) )
+				
+				# TODO: Catch errors here
+				y = qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx) )
 				v = dx * ( dx *(t(cx) - t(a) %*% y) )
 				
 				if( v[ npic + 1 ] > 0 ) {
@@ -332,7 +334,7 @@
 		go = -1
 		lambda = lambda / 10
 		while( go <= 0 ) {
-			cz = chol( hessv + lambda * diag( as.numeric(dx * dx) ) )
+			cz = chol( hessv + lambda * diag( as.numeric(dx * dx), length(dx), length(dx) ) )
 			cz = solve(cz)
 			yg = t(cz) %*% g
 			
