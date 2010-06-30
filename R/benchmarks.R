@@ -627,4 +627,3 @@ It has one linear equality constraint and variable bounds. See Kaplan and Knowle
 	attr(bt, "description") = paste("Permutation Problem PERM(4,0.5).")
 
 }
-

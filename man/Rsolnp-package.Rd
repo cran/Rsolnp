@@ -10,8 +10,8 @@ method solver (SQP based solver).}
 \tabular{ll}{
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
-Version: \tab 1\cr
-Date: \tab 2010-03-10\cr
+Version: \tab 1.0-4\cr
+Date: \tab 2010-06-27\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm\cr 
