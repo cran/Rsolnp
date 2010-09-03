@@ -1,7 +1,6 @@
 \name{Rsolnp-package}
 \alias{Rsolnp-package}
 \alias{Rsolnp}
-\docType{Rsolnp}
 \title{The Rsolnp package}
 \description{
 The Rsolnp package implements Y.Ye's general nonlinear augmented Lagrange multiplier
@@ -10,8 +9,8 @@ method solver (SQP based solver).}
 \tabular{ll}{
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
-Version: \tab 1.0-4\cr
-Date: \tab 2010-06-27\cr
+Version: \tab 1.0-5\cr
+Date: \tab 2010-09-03\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm\cr 
