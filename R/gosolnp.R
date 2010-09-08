@@ -30,10 +30,10 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		ineqUB = NULL, LB = NULL, UB = NULL, control = list(), distr = rep(1, length(LB)), distr.opt = list(), 
 		n.restarts = 1, n.sim = 20000, use.multicore = FALSE, rseed = NULL, ...)
 {
-	if(is.null(tolower(control$trace))) trace = FALSE else trace = TRUE
+	if(is.null(tolower(control$trace))) trace = FALSE else trace = as.logical(control$trace)
 	
 	# use a seed to initialize random no. generation
-	if(is.null(rseed)) rseed = as.numeric(Sys.time()) else rseed = as.numeric(rseed)
+	if(is.null(rseed)) rseed = as.numeric(Sys.time()) else rseed = as.integer(rseed)
 	
 	# check mclapply
 	if(use.multicore){
