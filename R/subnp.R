@@ -132,7 +132,7 @@
 			# scale the parameters (non ineq)
 			p0[ nineq + i ] = p0[ nineq + i ] + delta
 			tmpv = p0[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-			funv 	= .safefun(tmpv, .solnp_fun, ...)
+			funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 			eqv 	= .solnp_eqfun(tmpv, ...)
 			ineqv 	= .solnp_ineqfun(tmpv, ...)
 			ctmp = get(".solnp_nfn", envir =  .env)
@@ -248,7 +248,7 @@
 	if( ch > 0 ) {
 		
 		tmpv = p[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-		funv = .safefun(tmpv, .solnp_fun, ...)
+		funv = .safefun(tmpv, .solnp_fun, .env,...)
 		eqv = .solnp_eqfun(tmpv, ...)
 		ineqv = .solnp_ineqfun(tmpv, ...)
 		ctmp = get(".solnp_nfn", envir =  .env)
@@ -278,7 +278,7 @@
 				
 				p[ nineq + i ] = p[ nineq + i ] + delta
 				tmpv = p[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-				funv 	= .safefun(tmpv, .solnp_fun, ...)
+				funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 				eqv 	= .solnp_eqfun(tmpv, ...)
 				ineqv 	= .solnp_ineqfun(tmpv, ...)
 				ctmp = get(".solnp_nfn", envir =  .env)
@@ -364,7 +364,7 @@
 		alp[ 3 ] = 1.0
 		ptt = cbind(ptt, p0)
 		tmpv = ptt[ (nineq + 1):npic, 3 ] * vscale[ (nc + 2):(nc + np + 1) ]
-		funv 	= .safefun(tmpv, .solnp_fun, ...)
+		funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 		eqv 	= .solnp_eqfun(tmpv, ...)
 		ineqv 	= .solnp_ineqfun(tmpv, ...)
 		ctmp = get(".solnp_nfn", envir =  .env)
@@ -387,7 +387,7 @@
 			alp[ 2 ] = (alp[ 1 ] + alp[ 3 ]) / 2
 			ptt[ , 2 ] = (1 - alp[ 2 ]) * p + alp[ 2 ] * p0
 			tmpv = ptt[ (nineq + 1):npic, 2 ] * vscale[ (nc + 2):(nc + np + 1) ]
-			funv 	= .safefun(tmpv, .solnp_fun, ...)
+			funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 			eqv 	= .solnp_eqfun(tmpv, ...)
 			ineqv 	= .solnp_ineqfun(tmpv, ...)
 			ctmp = get(".solnp_nfn", envir =  .env)
@@ -644,7 +644,7 @@
 		#	# scale the parameters (non ineq)
 		#	p0[ nineq + i ] = p0[ nineq + i ] + delta
 		#	tmpv = p0[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-		#	funv 	= .safefun(tmpv, .solnp_fun, ...)
+		#	funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 		#	eqv 	= .solnp_eqfun(tmpv, ...)
 		#	ineqv 	= .solnp_ineqfun(tmpv, ...)
 		#	ctmp = get(".solnp_nfn", envir =  .env)
@@ -760,7 +760,7 @@
 	if( ch > 0 ) {
 		
 		tmpv = p[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-		funv = .safefun(tmpv, .solnp_fun, ...)
+		funv = .safefun(tmpv, .solnp_fun, .env, ...)
 		eqv = .solnp_eqfun(tmpv, ...)
 		ineqv = .solnp_ineqfun(tmpv, ...)
 		ctmp = get(".solnp_nfn", envir =  .env)
@@ -923,7 +923,7 @@
 		alp[ 3 ] = 1.0
 		ptt = cbind(ptt, p0)
 		tmpv = ptt[ (nineq + 1):npic, 3 ] * vscale[ (nc + 2):(nc + np + 1) ]
-		funv 	= .safefun(tmpv, .solnp_fun, ...)
+		funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 		eqv 	= .solnp_eqfun(tmpv, ...)
 		ineqv 	= .solnp_ineqfun(tmpv, ...)
 		ctmp = get(".solnp_nfn", envir =  .env)
@@ -946,7 +946,7 @@
 			alp[ 2 ] = (alp[ 1 ] + alp[ 3 ]) / 2
 			ptt[ , 2 ] = (1 - alp[ 2 ]) * p + alp[ 2 ] * p0
 			tmpv = ptt[ (nineq + 1):npic, 2 ] * vscale[ (nc + 2):(nc + np + 1) ]
-			funv 	= .safefun(tmpv, .solnp_fun, ...)
+			funv 	= .safefun(tmpv, .solnp_fun, .env, ...)
 			eqv 	= .solnp_eqfun(tmpv, ...)
 			ineqv 	= .solnp_ineqfun(tmpv, ...)
 			ctmp = get(".solnp_nfn", envir =  .env)
@@ -1064,7 +1064,7 @@
 	px = p
 	px[ nineq + i ] = px[ nineq + i ] + delta
 	tmpv = px[ (nineq + 1):npic ] * vscale[ (nc + 2):(nc + np + 1) ]
-	funv = .safefun(tmpv, .solnp_fun, ...)
+	funv = .safefun(tmpv, .solnp_fun, .env, ...)
 	eqv 	= .solnp_eqfun(tmpv, ...)
 	ineqv 	= .solnp_ineqfun(tmpv, ...)
 	ctmp = get(".solnp_nfn", envir =  .env)

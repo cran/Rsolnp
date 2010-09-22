@@ -30,7 +30,8 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		ineqUB = NULL, LB = NULL, UB = NULL, control = list(), distr = rep(1, length(LB)), distr.opt = list(), 
 		n.restarts = 1, n.sim = 20000, use.multicore = FALSE, rseed = NULL, ...)
 {
-	if(is.null(tolower(control$trace))) trace = FALSE else trace = as.logical(control$trace)
+	if( !is.null(pars) ) xnames = names(pars) else xnames = NULL
+	if(is.null(control$trace)) trace = FALSE else trace = as.logical(control$trace)
 	
 	# use a seed to initialize random no. generation
 	if(is.null(rseed)) rseed = as.numeric(Sys.time()) else rseed = as.integer(rseed)
@@ -80,19 +81,25 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 	
 	# initiate random search
 	spars = .randpars(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, eqB = eqB,  
-			ineqfun = ineqfun, ineqLB - ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, 
+			ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, 
 			distr = distr, distr.opt = distr.opt, n.restarts = n.restarts, n.sim = n.sim,
-			trace = trace, rseed = rseed,  ...)
+			trace = trace, rseed = rseed, xnames, ...)
 	
 	# initiate solver restarts
 	if(trace) cat("\ngosolnp-->Starting Solver\n")
 	solution = vector(mode = "list", length = n.restarts)
 	if(use.multicore){
-		solution = mclapply(1:n.restarts, FUN = function(i) solnp(pars = spars[i,], fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun,
-							ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...))
+		solution = mclapply(1:n.restarts, FUN = function(i) {
+		xx =spars[i,]
+		names(xx) = xnames
+		solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...)
+		})
 	} else{
-		solution = lapply(1:n.restarts, FUN = function(i) solnp(pars = spars[i,], fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun,
-							ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...))
+		solution = lapply(1:n.restarts, FUN = function(i){
+		xx = spars[i,]
+		names(xx) = xnames
+		solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...)
+		})
 	}
 	if(n.restarts>1){
 		best = sapply(solution, FUN = function(x) if(x$convergence!=0) NA else x$values[length(x$values)])
@@ -101,20 +108,23 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		solution = solution[[nb]]
 		if(trace) cat("\ngosolnp-->Done!\n")
 		solution$start.pars = spars[nb,]
+		names(solution$start.pars) = xnames
 		solution$rseed = rseed
 	} else{
 		solution = solution[[1]]
 		solution$start.pars = spars[1,]
+		names(solution$start.pars) = xnames
 		solution$rseed = rseed
 	}
 	return(solution)
 }
 
 .randpars = function(pars, fixed, fun, eqfun, eqB,  ineqfun, ineqLB, ineqUB, LB, UB, 
-		distr, distr.opt, n.restarts, n.sim, trace = TRUE, rseed, ...)
+		distr, distr.opt, n.restarts, n.sim, trace = TRUE, rseed, xnames, ...)
 {
 	if(trace) cat("\ngosolnp-->Calculating Random Initialization Parameters...")
-	
+	tmpenvir <- environment()
+	assign("xnames", xnames, envir = tmpenvir)
 	N = length(LB)
 	
 	rndpars = matrix(NA, ncol = N, nrow = n.sim * n.restarts)
@@ -145,7 +155,9 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		ineqv = matrix(NA, ncol = length(ineqLB), nrow = n.restarts*n.sim)
 		
 		# ineqv = t(apply(rndpars, 1, FUN = function(x) ineqfun(x)))
-		ineqv = t(apply(rndpars, 1, FUN = function(x) ineqfun(x, ...)))
+		ineqv = t(apply(rndpars, 1, FUN = function(x){
+			names(x) = xnames
+			ineqfun(x, ...)} ))
 		
 		# check lower and upper violations
 		lbviol = apply(ineqv, 1, FUN = function(x) sum(any(x<ineqLB)))
@@ -158,7 +170,7 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 	
 	# evaluate function value
 	if(trace) cat("\ngosolnp-->Evaluating Objective Function with Random Initialization Parameters...")
-	evfun = apply(rndpars, 1, FUN = function(x) .safefun(x, fun, ...))
+	evfun = apply(rndpars, 1, FUN = function(x) .safefun(x, fun, .env = tmpenvir, ...))
 	if(trace) cat("ok!\n")
 	
 	if(trace) cat("\ngosolnp-->Sorting and Choosing Best Candidates for starting Solver...")
@@ -172,7 +184,7 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		cat("\ngosolnp-->Starting Parameters and Starting Objective Function:\n")
 		if(n.restarts == 1) print(t(prtable), digits = 4) else print(prtable, digits = 4)
 	}
-	
+	rm(tmpenvir)
 	return(ans)
 }
 

@@ -47,10 +47,10 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 {
 	# start timer
 	tic = Sys.time()
-	
+	xnames = names(pars)
 	# get environment
 	.solnpenv <- environment()
-	
+	assign("xnames", xnames, envir = .solnpenv)
 	# initiate function count
 	assign(".solnp_nfn", 0, envir = .solnpenv)
 	
@@ -248,7 +248,7 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 		hessv  = res$hessv
 		mu = res$lambda
 		temp = p[ (nineq + 1):(nineq + np) ]
-		funv = .safefun(temp, .solnp_fun, ...)
+		funv = .safefun(temp, .solnp_fun, .env = .solnpenv, ...)
 		ctmp = get(".solnp_nfn", envir =  .solnpenv)
 		assign(".solnp_nfn", ctmp + 1, envir = .solnpenv)
 		
@@ -327,7 +327,8 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 	# end timer
 	ctmp = get(".solnp_nfn", envir =  .solnpenv)
 	toc = Sys.time() - tic
-	ans = list(pars = p, convergence = convergence, values = jh, lagrange = lambda, 
+	names(p) = xnames
+	ans = list(pars = p, convergence = convergence, values = as.numeric(jh), lagrange = lambda, 
 			hessian = hessv, ineqx0 = ineqx0, nfuneval = ctmp, outer.iter = .solnp_iter, 
 			elapsed = toc)
 	return( ans )

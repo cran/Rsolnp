@@ -1,8 +1,8 @@
 Package: Rsolnp
 Type: Package
 Title: General Non-linear Optimization
-Version: 1.0-5
-Date: 2010-09-03
+Version: 1.0-6
+Date: 2010-09-22
 Author: Alexios Ghalanos and Stefan Theussl
 Maintainer: Alexios Ghalanos <alexios@4dscape.com>
 Depends: stats, truncnorm
@@ -13,6 +13,6 @@ LazyLoad: yes
 License: GPL
 Repository: CRAN
 Repository/R-Forge/Project: rino
-Repository/R-Forge/Revision: 65
-Date/Publication: 2010-09-08 11:02:50
-Packaged: 2010-09-07 20:38:32 UTC; rforge
+Repository/R-Forge/Revision: 68
+Date/Publication: 2010-09-27 12:40:18
+Packaged: 2010-09-23 20:35:01 UTC; rforge
