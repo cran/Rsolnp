@@ -89,7 +89,9 @@
 
 # Might eventually use this, but really the user must take care of such problems
 # in their own function/setup
-.safefun = function(pars, fun, ...){
+.safefun = function(pars, fun, .env, ...){
+	xnames = get("xnames", envir = .env)
+	names(pars) = xnames
 	v  = fun(pars, ...)
 	if(is.na(v) | !is.finite(v) | is.nan(v)) {
 		warning(paste("\nsolnp-->warning: ", v , " detected in function call...check your function\n", sep = ""), immediate. = FALSE)
@@ -120,6 +122,7 @@
 
 .checkineq = function(pars, fun, ineqLB, ineqUB, .env, ...)
 {
+	xnames = get("xnames", envir = .env)
 	val = fun(pars, ...)
 	n = length(val)
 	if(!is.null(ineqLB)){
@@ -141,13 +144,18 @@
 
 	assign(".ineqLB", ineqLB, envir = .env)
 	assign(".ineqUB", ineqUB, envir = .env)
-	assign(".solnp_ineqfun", fun, envir = .env)
+	.solnp_ineqfun = function(x, ...){
+		names(x) = xnames
+		fun(x, ...)
+	}
+	assign(".solnp_ineqfun", .solnp_ineqfun, envir = .env)
 	return(val)
 }
 
 
 .checkeq = function(pars, fun, eqB, .env, ...)
 {
+	xnames = get("xnames", envir = .env)
 	n = length(eqB)
 	val = fun(pars, ...) - eqB
 	if(length(val)!=n)
@@ -155,7 +163,10 @@
 						to equality value\n", call. = FALSE)
 	.eqB = eqB
 	assign(".eqB", .eqB, envir = .env)
-	.solnp_eqfun = function(x, ...) fun(x, ...) - .eqB
+	.solnp_eqfun = function(x, ...){
+		names(x) = xnames
+		fun(x, ...) - .eqB
+	}
 	assign(".solnp_eqfun", .solnp_eqfun, envir = .env)
 	return(val)
 }
