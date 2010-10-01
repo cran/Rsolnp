@@ -1,3 +1,12 @@
+2010-10-01  Alexios Ghalanos <alexios@4dscape.com>
+
+	* DESCRIPTION (Version): New version is 1.0-7
+	* Some additional clarification in the documentation on the control parameters.
+	* Corrections to gosolnp checks on the inequality violations during random parameter generation
+	in the case of one-dimensional constraints (thanks to Matthieu Stigler).
+	* Convergence checks in the gosolnp with multiple restarts method to avoid exiting on failure from
+	solnp.
+
 2010-09-22  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0-6
