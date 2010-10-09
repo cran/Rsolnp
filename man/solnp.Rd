@@ -69,7 +69,7 @@ A list containing the following values:
 \item{values}{Vector of function values during optimization with last one the
 value at the optimal.}
 \item{lagrange}{The vector of Lagrange multipliers.}
-\item{hessian}{The Hessian at the optimal solution.}
+\item{hessian}{The Hessian of the augmented problem at the optimal solution.}
 \item{ineqx0}{The estimated optimal inequality vector of slack variables used for 
 transforming the inequality into an equality constraint.}
 \item{nfuneval}{The number of function evaluations.}
@@ -77,13 +77,16 @@ transforming the inequality into an equality constraint.}
 }
 \section{Control}{
 \describe{
-\item{rho}{Penalty parameter (default 1) }
-\item{outer.iter}{Maximum number of major (outer) iterations (default 400)}
-\item{inner.iter}{Maximum number of minor (inner) iterations (default 800)}
-\item{delta}{Relative step size in forward difference evaluation (default 1.0e-7)}
-\item{tol}{Tolerance on feasibility and optimality (default 1e-8)}
+\item{rho}{This is used as a penalty weighting scaler for infeasibility in the augmented
+objective function. The higher its value the more the weighting to bring the solution into the 
+feasible region (default 1). However, very high values might lead to numerical ill conditioning 
+or significantly slow down convergence.}
+\item{outer.iter}{Maximum number of major (outer) iterations (default 400).}
+\item{inner.iter}{Maximum number of minor (inner) iterations (default 800).}
+\item{delta}{Relative step size in forward difference evaluation (default 1.0e-7).}
+\item{tol}{ Relative tolerance on feasibility and optimality (default 1e-8).}
 \item{trace}{The value of the objective function and the parameters is printed at every
-major iteration (default 1)}
+major iteration (default 1).}
 }}
 \references{
 Y.Ye, \emph{Interior algorithms for linear, quadratic, and linearly constrained non 

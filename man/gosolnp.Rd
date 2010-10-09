@@ -49,7 +49,7 @@ The lower bound on the parameters. This is not optional in this function.
 The upper bound on the parameters. This is not optional in this function.
 }
   \item{control}{
-(Optional) The control list of optimization parameters. See below for details.
+(Optional) The control list of optimization parameters. See \code{solnp} function documentation for details.
 }
   \item{distr}{
 A numeric vector of length equal to the number of parameters, indicating the choice of distribution 
@@ -58,7 +58,7 @@ to use for the random parameter  generation. Choices are uniform (1), truncated 
   \item{distr.opt}{
 If any choice in \code{distr} was anything other than uniform (1), this is a list equal to the length of the
 parameters with sub-components for the mean and sd, which are required in the truncated normal and
-normal distributions (see note and examples for details).
+normal distributions.
 }
   \item{n.restarts}{
 The number of solver restarts required.
@@ -103,7 +103,9 @@ transforming the inequality into an equality constraint.}
 }
 \references{
 Y.Ye, \emph{Interior algorithms for linear, quadratic, and linearly constrained non 
-linear programming}, PhD Thesis, Department of EES Stanford University, Stanford CA.
+linear programming}, PhD Thesis, Department of EES Stanford University, Stanford CA.\cr
+Hu, X. and Shonkwiler, R. and Spruill, M.C. \emph{Random Restarts in Global Optimization},
+1994, Georgia Institute of technology, Atlanta.
 }
 \author{
 Alexios Ghalanos and Stefan Theussl\cr

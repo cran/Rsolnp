@@ -92,13 +92,29 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		solution = mclapply(1:n.restarts, FUN = function(i) {
 		xx =spars[i,]
 		names(xx) = xnames
-		solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...)
-		})
+		ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...),
+				silent = TRUE)
+		if(inherits(ans, "try-error")){
+			ans = list()
+			ans$values = 1e10
+			ans$convergence = 0
+			ans$pars = rep(NA, length(xx))
+		} 
+		return( ans )
+	})
 	} else{
 		solution = lapply(1:n.restarts, FUN = function(i){
 		xx = spars[i,]
 		names(xx) = xnames
-		solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...)
+		ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...),
+				silent = TRUE)
+		if(inherits(ans, "try-error")){
+			ans = list()
+			ans$values = 1e10
+			ans$convergence = 0
+			ans$pars = rep(NA, length(xx))
+		} 
+		return( ans )
 		})
 	}
 	if(n.restarts>1){
@@ -155,17 +171,41 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		ineqv = matrix(NA, ncol = length(ineqLB), nrow = n.restarts*n.sim)
 		
 		# ineqv = t(apply(rndpars, 1, FUN = function(x) ineqfun(x)))
-		ineqv = t(apply(rndpars, 1, FUN = function(x){
+		if(length(ineqLB) == 1){
+			ineqv = apply(rndpars, 1, FUN = function(x){
+								names(x) = xnames
+								ineqfun(x, ...)} )
+			lbviol = sum(ineqv<ineqLB)
+			ubviol = sum(ineqv>ineqUB)
+			if( lbviol > 0 | ubviol > 0 ){
+				vidx = c(which(ineqv<ineqLB), which(ineqv>ineqUB))
+				vidx = unique(vidx)
+				rndpars = rndpars[-c(vidx),]
+				lvx = length(vidx)
+			} else{
+				vidx = 0
+				lvx = 0
+			}
+		} else{
+			ineqv = t(apply(rndpars, 1, FUN = function(x){
 			names(x) = xnames
 			ineqfun(x, ...)} ))
 		
-		# check lower and upper violations
-		lbviol = apply(ineqv, 1, FUN = function(x) sum(any(x<ineqLB)))
-		ubviol = apply(ineqv, 1, FUN = function(x) sum(any(x>ineqUB)))
-		vidx = c(which(lbviol>0), which(ubviol>0))
-		vidx = unique(vidx)
-		rndpars = rndpars[-c(vidx),]
-		if(trace) cat(paste("\n...Excluded ", length(vidx), "/",n.restarts*n.sim, " Random Sequences\n", sep = ""))
+			# check lower and upper violations
+			lbviol = apply(ineqv, 1, FUN = function(x) sum(any(x<ineqLB)))
+			ubviol = apply(ineqv, 1, FUN = function(x) sum(any(x>ineqUB)))
+			if( any(lbviol > 0) | any(ubviol > 0) ){
+				vidx = c(which(lbviol>0), which(ubviol>0))
+				vidx = unique(vidx)
+				rndpars = rndpars[-c(vidx),]
+				lvx = length(vidx)
+				
+			} else{
+				vidx = 0
+				lvx = 0
+			}
+		}
+		if(trace) cat(paste("\n...Excluded ", lvx, "/",n.restarts*n.sim, " Random Sequences\n", sep = ""))
 	}
 	
 	# evaluate function value
