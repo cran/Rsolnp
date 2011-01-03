@@ -12,7 +12,7 @@ initialize multiple restarts of the solver (see note for details).
 \usage{
 gosolnp(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, 
 LB = NULL, UB = NULL, control = list(), distr = rep(1, length(LB)), distr.opt = list(), n.restarts = 1, 
-n.sim = 20000, use.multicore = FALSE, rseed = NULL, ...)
+n.sim = 20000, parallel = FALSE, parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), rseed = NULL, ...)
 }
 \arguments{
   \item{pars}{
@@ -68,9 +68,12 @@ The number of random parameters to generate for every restart of the solver. Not
 be significant rejections if inequality bounds are present. Also, this choice should also be motivated
 by the width of the upper and lower bounds.
 }
-  \item{use.multicore}{
-Logical. If available (not on windows yet), use the \code{multicore} package which takes advantage of all 
-cores available and greatly speeds the whole process which is a straightforward parallel problem.
+  \item{parallel}{ 
+Whether to make use of parallel processing on multicore systems.
+}
+  \item{parallel.control}{ 
+The parallel control options including the type of package for performing the parallel calculations 
+(\sQuote{multicore} for non-windows O/S and \sQuote{snowfall} for all O/S), and the number of cores to make use of.
 }
   \item{rseed}{
 (Optional) A seed to initiate the random number generator, else system time will be used.
@@ -156,7 +159,7 @@ In using choices (2) and (3) for \code{distr}, the \code{distr.opt} list must be
 	eqB = rep(1, n)
 	ans = gosolnp(pars  = NULL, fixed = NULL, fun = gofn, eqfun = goeqfn, eqB = eqB, LB = LB, UB = UB, 
 			control = list(outer.iter = 100, trace = 1), distr = rep(1, length(LB)), distr.opt = list(), 
-			n.restarts = 2, n.sim = 20000, use.multicore = FALSE, rseed = 443, n = 25)
+			n.restarts = 2, n.sim = 20000, rseed = 443, n = 25)
 	# should get a function value around 243.813
 }
 }
