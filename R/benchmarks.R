@@ -549,7 +549,7 @@ It has one linear equality constraint and variable bounds. See Kaplan and Knowle
 	eqB = rep(1, n)
 	ans = gosolnp(pars  = NULL, fixed = NULL, fun = gofn, eqfun = goeqfn, eqB = eqB, LB = LB, UB = UB,
 			control = list(), distr = rep(1, length(LB)), distr.opt = list(outer.iter = 10, trace = 1),
-			n.restarts = 2, n.sim = 20000, use.multicore = FALSE, rseed = 443, n = 25)
+			n.restarts = 2, n.sim = 20000, rseed = 443, n = 25)
 
 	conopt = list()
 	conopt$fn  = 243.813
@@ -606,7 +606,7 @@ It has one linear equality constraint and variable bounds. See Kaplan and Knowle
 
 	ans = gosolnp(pars  = NULL, fixed = NULL, fun = .perm, eqfun = NULL, eqB = NULL, LB = rep(-4, 4), UB = rep(4, 4),
 			control = list(outer.iter = 25, trace = 1, tol = 1e-9), distr = rep(1, 4), distr.opt = list(),
-			n.restarts = 6, n.sim = 20000, use.multicore = FALSE, rseed = 99, n = 4, b =0.5)
+			n.restarts = 6, n.sim = 20000, rseed = 99, n = 4, b =0.5)
 
 
 	bt = data.frame( solnp = rbind(round(ans$values[length(ans$values)], 5L),

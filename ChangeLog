@@ -1,3 +1,10 @@
+2011-01-03  Alexios Ghalanos <alexios@4dscape.com>
+
+	* DESCRIPTION (Version): New version is 1.0-8
+	* Parallel functionality changed in 'gosolnp' function to make use of both multicore and snowfall 
+	packages (i.e. windows multicore functionality now possible). This also opens the possibility for 
+	future extensions to use snowfall with Rmpi for cluster processing.
+
 2010-10-01  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0-7

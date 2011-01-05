@@ -9,12 +9,12 @@ method solver (SQP based solver).}
 \tabular{ll}{
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
-Version: \tab 1.0-7\cr
-Date: \tab 2010-10-01\cr
+Version: \tab 1.0-8\cr
+Date: \tab 2011-01-03\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm\cr 
-Suggests: \tab multicore\cr}
+Suggests: \tab multicore, snowfall\cr}
 }
 \author{
 Alexios Ghalanos and Stefan Theussl
