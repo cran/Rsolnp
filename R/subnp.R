@@ -199,7 +199,17 @@
 				# qr.solve returns [nc x 1]
 				
 				# TODO: Catch errors here
-				y = qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 1e-25 )
+				y = try( qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 1e-25 ), silent = TRUE)
+				if(inherits(y, "try-error")){
+					p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
+					if( nc > 0 ) {
+						y = 0 # unscale the lagrange multipliers
+					}
+					hessv = vscale[ 1 ] * hessv / (vscale[ (neq + 2):(nc + np + 1) ] %*% t(vscale[ (neq + 2):(nc + np + 1) ]) )
+					ans = list(p = p, y = y, hessv = hessv, lambda = lambda)
+					assign(".solnp_errors", 1, envir = .env)
+					return(ans)
+				}
 				v = dx * ( dx *(t(cx) - t(a) %*% y) )
 				
 				if( v[ npic + 1 ] > 0 ) {
@@ -265,7 +275,7 @@
 	
 	if( nc > 0 ) {
 		ob[ 2:(nc + 1) ] = ob[ 2:(nc + 1) ] - a %*% p + b
-		j = ob[ 1 ] - t(yy) %*% matrix(ob[ 2:(nc + 1) ],ncol=1) + rho * .vnorm(ob[ 2:(nc + 1) ]) ^ 2
+		j = ob[ 1 ] - t(yy) %*% matrix(ob[ 2:(nc + 1) ], ncol=1) + rho * .vnorm(ob[ 2:(nc + 1) ]) ^ 2
 	}
 	
 	minit = 0
@@ -334,14 +344,46 @@
 		go = -1
 		lambda = lambda / 10
 		while( go <= 0 ) {
-			cz = chol( hessv + lambda * diag( as.numeric(dx * dx), length(dx), length(dx) ) )
-			cz = solve(cz, tol = 1e-25)
+			cz = try(chol( hessv + lambda * diag( as.numeric(dx * dx), length(dx), length(dx) ) ),  silent = TRUE)
+			if(inherits(cz, "try-error")){
+				p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
+				if( nc > 0 ) {
+					y = 0 # unscale the lagrange multipliers
+				}
+				hessv = vscale[ 1 ] * hessv / (vscale[ (neq + 2):(nc + np + 1) ] %*% t(vscale[ (neq + 2):(nc + np + 1) ]) )
+				ans = list(p = p, y = y, hessv = hessv, lambda = lambda)
+				assign(".solnp_errors", 1, envir = .env)
+				return(ans)
+			}
+			cz = try(solve(cz, tol = 1e-25), silent = TRUE)
+			if(inherits(cz, "try-error")){
+				p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
+				if( nc > 0 ) {
+					y = 0 # unscale the lagrange multipliers
+				}
+				hessv = vscale[ 1 ] * hessv / (vscale[ (neq + 2):(nc + np + 1) ] %*% t(vscale[ (neq + 2):(nc + np + 1) ]) )
+				ans = list(p = p, y = y, hessv = hessv, lambda = lambda)
+				assign(".solnp_errors", 1, envir = .env)
+				return(ans)
+			}
 			yg = t(cz) %*% g
 			
 			if( nc == 0 ) {
 				u = -cz %*% yg
 			} else{
-				y = qr.solve(t(cz) %*% t(a), yg, tol = 1e-25)
+				y = try( qr.solve(t(cz) %*% t(a), yg, tol = 1e-25), silent = TRUE )
+				if(inherits(y, "try-error")){
+					p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
+					if( nc > 0 ) {
+						# y = vscale[ 1 ] * y / vscale[ 2:(nc + 1) ] # unscale the lagrange multipliers
+						y = 0
+					}
+					hessv = vscale[ 1 ] * hessv / (vscale[ (neq + 2):(nc + np + 1) ] %*% t(vscale[ (neq + 2):(nc + np + 1) ]) )
+					ans = list(p = p, y = y, hessv = hessv, lambda = lambda)
+					assign(".solnp_errors", 1, envir = .env)
+					return(ans)
+				}
+				
 				u = -cz %*% (yg - ( t(cz) %*% t(a) ) %*% y)
 			}
 			
@@ -711,7 +753,7 @@
 				# qr.solve returns [nc x 1]
 				
 				# TODO: Catch errors here
-				y = qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 1e-25 )
+				y = try(qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 1e-25 ), silent = TRUE)
 				v = dx * ( dx *(t(cx) - t(a) %*% y) )
 				
 				if( v[ npic + 1 ] > 0 ) {
@@ -893,8 +935,8 @@
 		go = -1
 		lambda = lambda / 10
 		while( go <= 0 ) {
-			cz = chol( hessv + lambda * diag( as.numeric(dx * dx), length(dx), length(dx) ) )
-			cz = solve(cz, tol = 1e-25)
+			cz = try( chol( hessv + lambda * diag( as.numeric(dx * dx), length(dx), length(dx) ) ), silent = TRUE)
+			cz = try( solve(cz, tol = 1e-25), silent = TRUE)
 			yg = t(cz) %*% g
 			
 			if( nc == 0 ) {

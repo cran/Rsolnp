@@ -65,7 +65,7 @@ Lagrange multiplier method with an SQP interior algorithm.
 \value{
 A list containing the following values:
 \item{pars}{Optimal Parameters.}
-\item{convergence }{Indicates whether the solver has converged (0) or not (1).}
+\item{convergence }{Indicates whether the solver has converged (0) or not (1 or 2).}
 \item{values}{Vector of function values during optimization with last one the
 value at the optimal.}
 \item{lagrange}{The vector of Lagrange multipliers.}

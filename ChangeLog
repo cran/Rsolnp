@@ -1,3 +1,9 @@
+2011-05-19  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.0-9
+	* Added more traps to catch errors in inverting the hessian during the inner step.
+	Convergence codes are now (0 - solution), (1 - maximum iterations without tolerance),
+	(2 - no convergence, failure to invert Hessian).
+	
 2011-01-03  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0-8

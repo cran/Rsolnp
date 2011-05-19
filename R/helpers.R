@@ -200,7 +200,7 @@
 {
 	# must be a matrix -> nrows = no.equalities, ncol = length(pars)
 	val = fun(pars, ...)
-	.eqB = get(".eqB", env = .env)
+	.eqB = get(".eqB", envir = .env)
 	if(!is.matrix(val))
 		stop("\nsolnp-->error: Jacobian of Equality must return a matrix type object\n", call. = FALSE)
 	nd = dim(val)

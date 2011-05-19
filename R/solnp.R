@@ -53,6 +53,7 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 	assign("xnames", xnames, envir = .solnpenv)
 	# initiate function count
 	assign(".solnp_nfn", 0, envir = .solnpenv)
+	assign(".solnp_errors", 0, envir = .solnpenv)
 	
 	# index of function indicators
 	# [1] length of pars
@@ -242,7 +243,9 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 		
 		res   = .subnp(pars = p, yy = lambda, ob = ob, hessv = hessv, lambda = mu, vscale = vscale, 
 				ctrl = .subnp_ctrl, .env = .solnpenv, ...)
-		
+		if(get(".solnp_errors", envir =  .solnpenv) == 1){
+			maxit = .solnp_iter
+		}		
 		p  = res$p
 		lambda  = res$y
 		hessv  = res$hessv
@@ -316,13 +319,18 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 	
 	p = p[ (nineq + 1):(nineq + np) ]
 	
-	if( .vnorm( c(tt[ 1 ], tt[ 2 ]) ) <= tol ) {
-		convergence = 0
-		if( trace ) cat( paste( "\nsolnp--> Completed in ", .solnp_iter, " iterations\n", sep="" ) )
+	if(get(".solnp_errors", envir =  .solnpenv) == 1){
+		convergence = 2
+		if( trace ) cat( paste( "\nsolnp--> Solution not reliable....Problem Inverting Hessian.\n", sep="" ) )
 	} else{
-		convergence = 1
-		if( trace ) cat( paste( "\nsolnp--> Exiting after maximum number of iterations\n",
-						"Tolerance not achieved\n", sep="" ) )
+		if( .vnorm( c(tt[ 1 ], tt[ 2 ]) ) <= tol ) {
+			convergence = 0
+			if( trace ) cat( paste( "\nsolnp--> Completed in ", .solnp_iter, " iterations\n", sep="" ) )
+		} else{
+			convergence = 1
+			if( trace ) cat( paste( "\nsolnp--> Exiting after maximum number of iterations\n",
+							"Tolerance not achieved\n", sep="" ) )
+		}
 	}
 	# end timer
 	ctmp = get(".solnp_nfn", envir =  .solnpenv)
