@@ -1,3 +1,14 @@
+2011-07-15  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.11
+	* Added a penalty barrier function for use in the gosolnp random sampling and evaluation.
+	* New function startpars directly returns a set of starting parameters ranked according
+	to either a direct evaluation of the objective (excluding any inequality violations) else
+	a penalty barrier function comprising the objective and constraints.
+	
+2011-07-06  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.1
+	* Correction to bug when terminating without solution (introduced in last update).
+
 2011-05-19  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.0-9
 	* Added more traps to catch errors in inverting the hessian during the inner step.

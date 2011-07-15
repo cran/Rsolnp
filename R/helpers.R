@@ -190,7 +190,7 @@
 						of inequality bounds vector\n", call. = FALSE)
 	# as in inequality function, transforms from a 2 sided inequality to a one sided inequality
 	# (for the jacobian).
-	.solnp_ineqjac = function(x, ...) { retval = fun(x, ...); rbind( - retval, retval ) }
+	.solnp_ineqjac = function(x, ...) { retval = fun(x, ...); rbind( retval ) }
 	assign(".solnp_ineqjac", .solnp_ineqjac, envir = .env)
 	return(val)
 }
@@ -273,7 +273,8 @@
 
 .emptyjac = function(pars, ...)
 {
-	matrix(0, nrow = 0, ncol = length(pars))
+	#matrix(0, nrow = 0, ncol = length(pars))
+	NULL
 }
 
 .emptyfun = function(pars, ...)
