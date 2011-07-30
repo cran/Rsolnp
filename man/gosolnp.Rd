@@ -30,7 +30,7 @@ a single value.
 constraints.
 }
   \item{eqB}{
-(Optioal) The equality constraints.
+(Optional) The equality constraints.
 }
   \item{ineqfun}{
 (Optional) The inequality constraint function returning the vector of evaluated inequality 
@@ -49,7 +49,10 @@ The lower bound on the parameters. This is not optional in this function.
 The upper bound on the parameters. This is not optional in this function.
 }
   \item{control}{
-(Optional) The control list of optimization parameters. See \code{solnp} function documentation for details.
+(Optional) The control list of optimization parameters. The \code{eval.type} option in this control list denotes
+whether to evaluate the function as is and exclude inequality violations in the final ranking (default, value = 1),
+else whether to evaluate a penalty barrier function comprised of the objective and all constraints (value = 2).
+See \code{solnp} function documentation for details of the remaining control options.
 }
   \item{distr}{
 A numeric vector of length equal to the number of parameters, indicating the choice of distribution 
@@ -84,11 +87,12 @@ The parallel control options including the type of package for performing the pa
 }
 \details{
 Given a set of lower and upper bounds, the function generates, for those parameters not set as fixed,
-random values from one of the 3 chosen distributions. The parameters are then passed to the inequality
-function if that is present, and any parameters violating the upper or lower inequality bounds are
-excluded. The parameters are then passed to the objective function, which is evaluated at those
-parameters, the resulting values sorted, and the best N (N = random.restart) parameter vectors 
-(corresponding to the best N objective function values) chosen in order to initialize the solver.
+random values from one of the 3 chosen distributions. Depending on the \code{eval.type} option of the
+\code{control} argument, the function is either directly evaluated for those points not violating any
+inequality constraints, or indirectly via a penalty barrier function jointly comprising the objective 
+and constraints. The resulting values are then sorted, and the best N (N = random.restart) parameter 
+vectors (corresponding to the best N objective function values) chosen in order to initialize the 
+solver.
 }
 \value{
 A list containing the following values:
