@@ -165,7 +165,7 @@
 			if( !ind[11] ) {
 				# a %*% t(a) gives [nc x nc]
 				# t(a) %*% above gives [(np+nc) x 1]
-				p0 = p0 - t(a) %*% solve(a %*% t(a), constraint, tol = 1e-24)
+				p0 = p0 - t(a) %*% solve(a %*% t(a), constraint, tol = 2.220446e-16)
 				alp[ 1 ] = 1
 			}
 
@@ -199,7 +199,7 @@
 				# qr.solve returns [nc x 1]
 				
 				# TODO: Catch errors here
-				y = try( qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 1e-25 ), silent = TRUE)
+				y = try( qr.solve( t( a %*% diag( as.numeric(dx) , length(dx), length(dx) ) ), dx * t(cx), tol = 2.220446e-16), silent = TRUE)
 				if(inherits(y, "try-error")){
 					p = p0 * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
 					if( nc > 0 ) {
@@ -355,7 +355,7 @@
 				assign(".solnp_errors", 1, envir = .env)
 				return(ans)
 			}
-			cz = try(solve(cz, tol = 1e-25), silent = TRUE)
+			cz = try(solve(cz, tol = 2.220446e-16), silent = TRUE)
 			if(inherits(cz, "try-error")){
 				p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
 				if( nc > 0 ) {
@@ -371,7 +371,7 @@
 			if( nc == 0 ) {
 				u = -cz %*% yg
 			} else{
-				y = try( qr.solve(t(cz) %*% t(a), yg, tol = 1e-25), silent = TRUE )
+				y = try( qr.solve(t(cz) %*% t(a), yg, tol = 2.220446e-16), silent = TRUE )
 				if(inherits(y, "try-error")){
 					p = p * vscale[ (neq + 2):(nc + np + 1) ]  # unscale the parameter vector
 					if( nc > 0 ) {
