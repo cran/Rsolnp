@@ -9,8 +9,8 @@ method solver (SQP based solver).}
 \tabular{ll}{
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
-Version: \tab 1.11\cr
-Date: \tab 2011-07-15\cr
+Version: \tab 1.12\cr
+Date: \tab 2012-03-25\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm\cr 
