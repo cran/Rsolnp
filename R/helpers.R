@@ -1,6 +1,6 @@
 #################################################################################
 ##
-##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009
+##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009-2013
 ##   This file is part of the R package Rsolnp.
 ##
 ##   The R package Rsolnp is free software: you can redistribute it and/or modify
@@ -14,7 +14,6 @@
 ##   GNU General Public License for more details.
 ##
 #################################################################################
-
 
 .eps = .Machine$double.eps
 
@@ -89,7 +88,7 @@
 
 # Might eventually use this, but really the user must take care of such problems
 # in their own function/setup
-.safefun = function(pars, fun, .env, ...){
+.safefunx = function(pars, fun, .env, ...){
 	xnames = get("xnames", envir = .env)
 	names(pars) = xnames
 	v  = fun(pars, ...)

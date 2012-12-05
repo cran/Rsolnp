@@ -1,39 +1,46 @@
 \name{startpars}
 \alias{startpars}
 \title{
-Generates and returns a set of starting parameters by sampling the parameter space based
-on the evaluation of the function and constraints.
+Generates and returns a set of starting parameters by sampling the parameter 
+space based on the evaluation of the function and constraints.
 }
 \description{
-A simple penalty barrier function is formed which is then evaluated at randomly sampled points
-based on the upper and lower parameter bounds (when \code{eval.type} = 2), else the objective function directly
-for values not violating any inequality constraints (when \code{eval.type} = 1). 
-The sampled points can be generated from the uniform, normal or truncated normal distribution.
+A simple penalty barrier function is formed which is then evaluated at randomly 
+sampled points based on the upper and lower parameter bounds 
+(when \code{eval.type} = 2), else the objective function directly for values not 
+violating any inequality constraints (when \code{eval.type} = 1). The sampled 
+points can be generated from the uniform, normal or truncated normal 
+distributions.
 }
 \usage{
-startpars(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = NULL, 
-		ineqUB = NULL, LB = NULL, UB = NULL, distr = rep(1, length(LB)), distr.opt = list(), 
-		n.sim = 20000, parallel = FALSE, parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), 
-		rseed = NULL, bestN = 15, eval.type = 1, trace = FALSE, ...)
+startpars(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, 
+ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, LB = NULL, UB = NULL, 
+distr = rep(1, length(LB)), distr.opt = list(), n.sim = 20000, cluster = NULL, 
+rseed = NULL, bestN = 15, eval.type = 1, trace = FALSE, ...)
 }
 \arguments{
   \item{pars}{
-The starting parameter vector. This is not required unless the fixed option is also used.
+The starting parameter vector. This is not required unless the fixed option is 
+also used.
 }
   \item{fixed}{
-The numeric index which indicates those parameters which should stay fixed instead of being randomly generated.
+The numeric index which indicates those parameters which should stay fixed 
+instead of being randomly generated.
 }
   \item{fun}{
-The main function which takes as first argument the parameter vector and returns a single value.
+The main function which takes as first argument the parameter vector and returns 
+a single value.
 }
   \item{eqfun}{
-(Optional) The equality constraint function returning the vector of evaluated equality constraints.
+(Optional) The equality constraint function returning the vector of evaluated 
+equality constraints.
 }
   \item{eqB}{
 (Optional) The equality constraints.
 }
   \item{ineqfun}{
-(Optional) The inequality constraint function returning the vector of evaluated inequality constraints.
+(Optional) The inequality constraint function returning the vector of evaluated 
+inequality constraints.
 }
   \item{ineqLB}{
 (Optional) The lower bound of the inequality constraints.
@@ -48,13 +55,14 @@ The lower bound on the parameters. This is not optional in this function.
 The upper bound on the parameters. This is not optional in this function.
 }
   \item{distr}{
-A numeric vector of length equal to the number of parameters, indicating the choice of distribution 
-to use for the random parameter  generation. Choices are uniform (1), truncated normal (2), and normal (3).
+A numeric vector of length equal to the number of parameters, indicating the 
+choice of distribution to use for the random parameter generation. Choices are 
+uniform (1), truncated normal (2), and normal (3).
 }
   \item{distr.opt}{
-If any choice in \code{distr} was anything other than uniform (1), this is a list equal to the length of the
-parameters with sub-components for the mean and sd, which are required in the truncated normal and
-normal distributions.
+If any choice in \code{distr} was anything other than uniform (1), this is a 
+list equal to the length of the parameters with sub-components for the mean and 
+sd, which are required in the truncated normal and normal distributions.
 }
   \item{bestN}{
 The best N (less than or equal to n.sim) set of parameters to return.
@@ -62,55 +70,62 @@ The best N (less than or equal to n.sim) set of parameters to return.
   \item{n.sim}{
 The number of random parameter sets to generate.
 }
-  \item{parallel}{
-Whether to make use of parallel processing on multicore systems.
-}
-  \item{parallel.control}{ 
-The parallel control options including the type of package for performing the parallel calculations 
-(\sQuote{multicore} for non-windows O/S and \sQuote{snowfall} for all O/S), and the number of cores to make use of.
+  \item{cluster}{ 
+If you want to make use of parallel functionality, initialize and pass a cluster 
+object from the parallel package (see details), and remember to terminate it!
 }
   \item{rseed}{
-(Optional) A seed to initiate the random number generator, else system time will be used.
+(Optional) A seed to initiate the random number generator, else system time will 
+be used.
 }
   \item{eval.type}{
-Either 1 (default) for the direction evaluation of the function (excluding inequality constraint violations) 
-or 2 for the penalty barrier method.
+Either 1 (default) for the direction evaluation of the function (excluding 
+inequality constraint violations) or 2 for the penalty barrier method.
 }
   \item{trace}{
 (logical) Whether to display the progress of the function evaluation.
 }
   \item{\dots}{
-(Optional) Additional parameters passed to the main, equality or inequality functions
+(Optional) Additional parameters passed to the main, equality or inequality 
+functions
 }
 }
 \details{
-Given a set of lower and upper bounds, the function generates, for those parameters not set as fixed,
-random values from one of the 3 chosen distributions. For simple functions with only inequality constraints,
-the direct method (\code{eval.type} = 1) might work better. For more complex setups with both equality and 
-inequality constraints the penalty barrier method (\code{eval.type} = 2)might be a better choice.
+Given a set of lower and upper bounds, the function generates, for those 
+parameters not set as fixed, random values from one of the 3 chosen 
+distributions. For simple functions with only inequality constraints, the direct 
+method (\code{eval.type} = 1) might work better. For more complex setups with 
+both equality and inequality constraints the penalty barrier method 
+(\code{eval.type} = 2)might be a better choice.
 }
 \value{
-A matrix of dimension bestN x (no.parameters + 1). The last column is the evaluated function value.
+A matrix of dimension bestN x (no.parameters + 1). The last column is the 
+evaluated function value.
 }
 \author{
 Alexios Ghalanos and Stefan Theussl\cr
 }
 \note{
-The choice of which distribution to use for randomly sampling the parameter space should be driven by the
-user's knowledge of the problem and confidence or lack thereof of the parameter distribution. The uniform distribution
-indicates a lack of confidence in the location or dispersion of the parameter, while the truncated normal indicates
-a more confident choice in both the location and dispersion. On the other hand, the normal indicates perhaps a lack
-of knowledge in the upper or lower bounds, but some confidence in the location and dispersion of the parameter.
-In using choices (2) and (3) for \code{distr}, the \code{distr.opt} list must be supplied with \code{mean} and 
-\code{sd} as subcomponents for those parameters not using the uniform.
+The choice of which distribution to use for randomly sampling the parameter 
+space should be driven by the user's knowledge of the problem and confidence or 
+lack thereof of the parameter distribution. The uniform distribution indicates a 
+lack of confidence in the location or dispersion of the parameter, while the 
+truncated normal indicates a more confident choice in both the location and 
+dispersion. On the other hand, the normal indicates perhaps a lack
+of knowledge in the upper or lower bounds, but some confidence in the location 
+and dispersion of the parameter. In using choices (2) and (3) for \code{distr}, 
+the \code{distr.opt} list must be supplied with \code{mean} and \code{sd} as 
+subcomponents for those parameters not using the uniform.
 }
 \examples{
 \dontrun{
-# Parallel example (change to cores to your own requirements in the example below)
-# Always load snowfall manually as it might fail if loaded by the program on request
-
 library(Rsolnp)
-library(snowfall)
+library(parallel)
+# Windows
+cl = makePSOCKcluster(2)
+# Linux:
+# makeForkCluster(nnodes = getOption("mc.cores", 2L), ...)
+
 gofn = function(dat, n)
 {
 	
@@ -135,19 +150,22 @@ goeqfn = function(dat, n)
 	apply(cbind(x^2, y^2, z^2), 1, "sum")
 }
 n = 25
-LB = rep(-1, 3*n)
-UB = rep(1,  3*n)
-eqB = rep(1, n)
+LB  = rep(-1, 3*n)
+UB  = rep( 1, 3*n)
+eqB = rep( 1,   n)
 
-sp = startpars(pars = NULL, fixed = NULL, fun = gofn , eqfun = goeqfn , eqB = eqB, ineqfun = NULL, ineqLB = NULL, 
-		ineqUB = NULL, LB = LB, UB = UB, distr = rep(1, length(LB)), distr.opt = list(), 
-		n.sim = 2000, parallel = TRUE, parallel.control = list(pkg = c("snowfall"), cores = 2), 
-		rseed = 100, bestN = 15, eval.type = 2, n = 25)
-# the last column is the value of the evaluated function (here it is the barrier function since eval.type = 2)
+sp = startpars(pars = NULL, fixed = NULL, fun = gofn , eqfun = goeqfn, 
+eqB = eqB, ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, LB = LB, UB = UB, 
+distr = rep(1, length(LB)), distr.opt = list(), n.sim = 2000, 
+cluster = cl, rseed = 100, bestN = 15, eval.type = 2, n = 25)
+#stop cluster
+stopCluster(cl)
+# the last column is the value of the evaluated function (here it is the barrier 
+# function since eval.type = 2) 
 print(round(apply(sp, 2, "mean"), 3))
 # remember to remove the last column
-ans = solnp(pars=sp[1,-76],fun = gofn , eqfun = goeqfn , eqB = eqB, ineqfun = NULL, ineqLB = NULL, 
-		ineqUB = NULL, LB = LB, UB = UB, n = 25)
+ans = solnp(pars=sp[1,-76],fun = gofn , eqfun = goeqfn , eqB = eqB, ineqfun = NULL, 
+ineqLB = NULL, ineqUB = NULL, LB = LB, UB = UB, n = 25)
 # should get a value of around 243.8162
 }}
 
