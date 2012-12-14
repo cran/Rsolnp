@@ -1,6 +1,6 @@
 #################################################################################
 ##
-##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009
+##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009-2013
 ##   This file is part of the R package Rsolnp.
 ##
 ##   The R package Rsolnp is free software: you can redistribute it and/or modify
@@ -257,7 +257,7 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 		hessv  = res$hessv
 		mu = res$lambda
 		temp = p[ (nineq + 1):(nineq + np) ]
-		funv = .safefun(temp, .solnp_fun, .env = .solnpenv, ...)
+		funv = .safefunx(temp, .solnp_fun, .env = .solnpenv, ...)
 		ctmp = get(".solnp_nfn", envir =  .solnpenv)
 		assign(".solnp_nfn", ctmp + 1, envir = .solnpenv)
 		

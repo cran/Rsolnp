@@ -1,3 +1,5 @@
+importFrom(truncnorm, rtruncnorm)
+importFrom(parallel, parLapply, clusterExport, clusterEvalQ) 
 export("solnp")
 export("gosolnp")
 export("startpars")

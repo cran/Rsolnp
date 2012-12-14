@@ -1,6 +1,6 @@
 #################################################################################
 ##
-##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009
+##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009-2013
 ##   This file is part of the R package Rsolnp.
 ##
 ##   The R package Rsolnp is free software: you can redistribute it and/or modify
@@ -28,24 +28,23 @@
 
 gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = NULL, 
 		ineqUB = NULL, LB = NULL, UB = NULL, control = list(), distr = rep(1, length(LB)), distr.opt = list(), 
-		n.restarts = 1, n.sim = 20000, parallel = FALSE, 
-		parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), rseed = NULL, ...)
+		n.restarts = 1, n.sim = 20000, cluster = NULL, rseed = NULL, ...)
 {
-	if( !is.null(pars) ) xnames = names(pars) else xnames = NULL
+	if( !is.null(pars) ) gosolnp_parnames = names(pars) else gosolnp_parnames = NULL
 	if(is.null(control$trace)) trace = FALSE else trace = as.logical(control$trace)
 	if(is.null(control$eval.type)) parmethod = 1 else parmethod = as.integer(min(abs(control$eval.type),2))
 	if(parmethod == 0) parmethod = 1
 	control$eval.type = NULL
-	
 	# use a seed to initialize random no. generation
 	if(is.null(rseed)) rseed = as.numeric(Sys.time()) else rseed = as.integer(rseed)
-	
 	# function requires both upper and lower bounds
-	if(is.null(LB)) stop("\ngosolnp-->error: the function requires lower parameter bounds\n", call. = FALSE)
-	if(is.null(UB)) stop("\ngosolnp-->error: the function requires upper parameter bounds\n", call. = FALSE)
-	
+	if(is.null(LB)) 
+		stop("\ngosolnp-->error: the function requires lower parameter bounds\n", call. = FALSE)
+	if(is.null(UB)) 
+		stop("\ngosolnp-->error: the function requires upper parameter bounds\n", call. = FALSE)
 	# allow for fixed parameters (i.e. non randomly chosen), but require pars vector in that case
-	if(!is.null(fixed) && is.null(pars)) stop("\ngosolnp-->error: you need to provide a pars vector if using the fixed option\n", call. = FALSE)
+	if(!is.null(fixed) && is.null(pars)) 
+		stop("\ngosolnp-->error: you need to provide a pars vector if using the fixed option\n", call. = FALSE)
 	if(!is.null(pars)) n = length(pars) else n = length(LB)
 	
 	np = 1:n
@@ -54,132 +53,127 @@ gosolnp = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ine
 		# make unique
 		fixed = unique(fixed)
 		# check for violations in indices
-		if(any(is.na(match(fixed, np)))) stop("\ngosolnp-->error: fixed indices out of bounds\n", call. = FALSE)
+		if(any(is.na(match(fixed, np)))) 
+			stop("\ngosolnp-->error: fixed indices out of bounds\n", call. = FALSE)
 	}
-	
 	# check distribution options
 	# truncated normal
 	if(any(distr == 2)){
 		d2 = which(distr == 2)
 		for(i in 1:length(d2)) {
-			if(is.null(distr.opt[[d2[i]]]$mean)) stop(paste("\ngosolnp-->error: distr.opt[[,",d2[i],"]] missing mean\n", sep = ""), 
-						call. = FALSE)
-			if(is.null(distr.opt[[d2[i]]]$sd)) stop(paste("\ngosolnp-->error: distr.opt[[,",d2[i],"]] missing sd\n", sep = ""), 
-						call. = FALSE)
+			if(is.null(distr.opt[[d2[i]]]$mean)) 
+				stop(paste("\ngosolnp-->error: distr.opt[[,",d2[i],"]] missing mean\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d2[i]]]$sd)) 
+				stop(paste("\ngosolnp-->error: distr.opt[[,",d2[i],"]] missing sd\n", sep = ""), call. = FALSE)
 		}
 	}
 	#  normal
 	if(any(distr == 3)){
 		d3 = which(distr == 3)
 		for(i in 1:length(d3)) {
-			if(is.null(distr.opt[[d3[i]]]$mean)) stop(paste("\ngosolnp-->error: distr.opt[[,",d3[i],"]] missing mean\n", sep = ""), call. = FALSE)
-			if(is.null(distr.opt[[d3[i]]]$sd)) stop(paste("\ngosolnp-->error: distr.opt[[,",d3[i],"]] missing sd\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d3[i]]]$mean)) 
+				stop(paste("\ngosolnp-->error: distr.opt[[,",d3[i],"]] missing mean\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d3[i]]]$sd)) 
+				stop(paste("\ngosolnp-->error: distr.opt[[,",d3[i],"]] missing sd\n", sep = ""), call. = FALSE)
 		}
 	}
-	
+	# setup cluster exports:
+	if( !is.null(cluster) ){
+		parallel::clusterExport(cluster, c("gosolnp_parnames", "fun", "eqfun", 
+						"eqB", "ineqfun", "ineqLB", "ineqUB", "LB", "UB"), envir = environment())
+		if( !is.null(names(list(...))) ){
+			# evaluate promises
+			xl = names(list(...))
+			for(i in 1:length(xl)){
+				eval(parse(text=paste(xl[i],"=list(...)"[[i]],sep="")))
+			}
+			parallel::clusterExport(cluster, names(list(...)), envir = environment())
+		}
+		parallel::clusterEvalQ(cluster, require(Rsolnp))
+	}
 	# initiate random search
-	spars = switch(parmethod,
-			.randpars(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, eqB = eqB,  
-			ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, 
-			distr = distr, distr.opt = distr.opt, n.restarts = n.restarts, n.sim = n.sim,
-			trace = trace, rseed = rseed, xnames, parallel = parallel, parallel.control = parallel.control, ...),
-			.randpars2(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, 
-					ineqUB = ineqUB, LB = LB, UB = UB, distr = distr, distr.opt = distr.opt, n.restarts = n.restarts, 
-					n.sim = n.sim, rseed = rseed, trace = trace, xnames, parallel = parallel,
-			parallel.control = parallel.control, ...))
-	spars = spars[,1:n, drop = FALSE]
+	gosolnp_rndpars = switch(parmethod,
+			.randpars(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, 
+					eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, 
+					ineqUB = ineqUB, LB = LB, UB = UB, distr = distr, 
+					distr.opt = distr.opt, n.restarts = n.restarts, 
+					n.sim = n.sim, trace = trace, rseed = rseed, 
+					gosolnp_parnames = gosolnp_parnames, cluster = cluster, ...),
+			.randpars2(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, 
+					eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, 
+					ineqUB = ineqUB, LB = LB, UB = UB, distr = distr, 
+					distr.opt = distr.opt, n.restarts = n.restarts, 
+					n.sim = n.sim, rseed = rseed, trace = trace, 
+					gosolnp_parnames = gosolnp_parnames, cluster = cluster, ...))
+	
+	gosolnp_rndpars = gosolnp_rndpars[,1:n, drop = FALSE]
 	# initiate solver restarts
-	if(trace) cat("\ngosolnp-->Starting Solver\n")
+	if( trace ) cat("\ngosolnp-->Starting Solver\n")
 	solution = vector(mode = "list", length = n.restarts)
-	if( parallel ){
-		os = .Platform$OS.type
-		if(is.null(parallel.control$pkg)){
-			if( os == "windows" ) parallel.control$pkg = "snowfall" else parallel.control$pkg = "multicore"
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2
-		} else{
-			mtype = match(tolower(parallel.control$pkg[1]), c("multicore", "snowfall"))
-			if(is.na(mtype)) stop("\nParallel Package type not recognized in parallel.control\n")
-			parallel.control$pkg = tolower(parallel.control$pkg[1])
-			if( os == "windows" && parallel.control$pkg == "multicore" ) stop("\nmulticore not supported on windows O/S\n")
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2 else parallel.control$cores = as.integer(parallel.control$cores[1])
-		}
-		if( parallel.control$pkg == "multicore" ){
-			if(!exists("mclapply")){
-				require('multicore')
-			}
-			solution = mclapply(1:n.restarts, FUN = function(i) {
-				xx =spars[i,]
-				names(xx) = xnames
-				ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...),
-						silent = TRUE)
-				if(inherits(ans, "try-error")){
-					ans = list()
-					ans$values = 1e10
-					ans$convergence = 0
-					ans$pars = rep(NA, length(xx))
-				} 
-				return( ans )
-			}, mc.cores = parallel.control$cores)
-		} else{
-			if(!exists("sfLapply")){
-				library('snowfall', pos = "package:base")
-			}
-			sfInit(parallel=TRUE, cpus = parallel.control$cores)
-			sfExport("spars", "xnames", "fun", "eqfun", "eqB", "ineqfun","ineqLB", "ineqUB", "LB", "UB", "control", "...", local = TRUE)
-			solution = sfLapply(as.list(1:n.restarts), fun = function(i) {
-				xx = spars[i,]
-				names(xx) = xnames
-				ans = try(Rsolnp::solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...),
-						silent = TRUE)
-				if(inherits(ans, "try-error")){
-					ans = list()
-					ans$values = 1e10
-					ans$convergence = 0
-					ans$pars = rep(NA, length(xx))
-				} 
-				return( ans )
-			})
-			sfStop()
-		}
-	} else{
-		solution = lapply(1:n.restarts, FUN = function(i){
-		xx = spars[i,]
-		names(xx) = xnames
-		ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, control = control, ...),
-				silent = TRUE)
-		if(inherits(ans, "try-error")){
-			ans = list()
-			ans$values = 1e10
-			ans$convergence = 0
-			ans$pars = rep(NA, length(xx))
-		} 
-		return( ans )
-		})
+	if( !is.null(cluster) )
+	{
+		parallel::clusterExport(cluster, c("gosolnp_rndpars"), envir = environment())
+		solution = parallel::parLapply(cluster, as.list(1:n.restarts), fun = function(i) {
+					xx = gosolnp_rndpars[i,]
+					names(xx) = gosolnp_parnames
+					ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, 
+									eqB = eqB, ineqfun = ineqfun, 
+									ineqLB = ineqLB, ineqUB = ineqUB, 
+									LB = LB, UB = UB, 
+									control = control, ...), silent = TRUE)
+					if(inherits(ans, "try-error")){
+						ans = list()
+						ans$values = 1e10
+						ans$convergence = 0
+						ans$pars = rep(NA, length(xx))
+					}
+					return( ans )
+				})
+	} else {
+		solution = lapply(as.list(1:n.restarts), FUN = function(i){
+					xx = gosolnp_rndpars[i,]
+					names(xx) = gosolnp_parnames
+					ans = try(solnp(pars = xx, fun = fun, eqfun = eqfun, 
+									eqB = eqB, ineqfun = ineqfun, 
+									ineqLB = ineqLB, ineqUB = ineqUB, 
+									LB = LB, UB = UB, 
+									control = control, ...), silent = TRUE)
+					if(inherits(ans, "try-error")){
+						ans = list()
+						ans$values = 1e10
+						ans$convergence = 0
+						ans$pars = rep(NA, length(xx))
+					} 
+					return( ans )
+				})
 	}
 	if(n.restarts>1){
 		best = sapply(solution, FUN = function(x) if(x$convergence!=0) NA else x$values[length(x$values)])
-		if(all(is.na(best))) stop("\ngosolnp-->Could not find a feasible starting point...exiting\n", call. = FALSE)
+		if(all(is.na(best))) 
+			stop("\ngosolnp-->Could not find a feasible starting point...exiting\n", call. = FALSE)
 		nb = which(best == min(best, na.rm = TRUE))[1]
 		solution = solution[[nb]]
-		if(trace) cat("\ngosolnp-->Done!\n")
-		solution$start.pars = spars[nb,]
-		names(solution$start.pars) = xnames
+		if( trace ) cat("\ngosolnp-->Done!\n")
+		solution$start.pars = gosolnp_rndpars[nb,]
+		names(solution$start.pars) = gosolnp_parnames
 		solution$rseed = rseed
 	} else{
 		solution = solution[[1]]
-		solution$start.pars = spars[1,]
-		names(solution$start.pars) = xnames
+		solution$start.pars = gosolnp_rndpars[1,]
+		names(solution$start.pars) = gosolnp_parnames
 		solution$rseed = rseed
 	}
 	return(solution)
 }
 
-startpars = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = NULL, 
-		ineqUB = NULL, LB = NULL, UB = NULL, distr = rep(1, length(LB)), distr.opt = list(), 
-		n.sim = 20000, parallel = FALSE, parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), rseed = NULL, 
-		bestN = 15, eval.type = 1, trace = FALSE, ...)
+
+
+startpars = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, 
+		ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, LB = NULL, UB = NULL, 
+		distr = rep(1, length(LB)), distr.opt = list(), n.sim = 20000, cluster = NULL, 
+		rseed = NULL, bestN = 15, eval.type = 1, trace = FALSE, ...)
 {
-	if( !is.null(pars) ) xnames = names(pars) else xnames = NULL
+	if( !is.null(pars) ) gosolnp_parnames = names(pars) else gosolnp_parnames = NULL
 	if(is.null(eval.type)) parmethod = 1 else parmethod = as.integer(min(abs(eval.type),2))
 	if(parmethod == 0) parmethod = 1
 	eval.type = NULL
@@ -187,20 +181,24 @@ startpars = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, i
 	# use a seed to initialize random no. generation
 	if(is.null(rseed)) rseed = as.numeric(Sys.time()) else rseed = as.integer(rseed)
 	# function requires both upper and lower bounds
-	if(is.null(LB)) stop("\nstartpars-->error: the function requires lower parameter bounds\n", call. = FALSE)
-	if(is.null(UB)) stop("\nstartpars-->error: the function requires upper parameter bounds\n", call. = FALSE)
+	if(is.null(LB)) 
+		stop("\nstartpars-->error: the function requires lower parameter bounds\n", call. = FALSE)
+	if(is.null(UB)) 
+		stop("\nstartpars-->error: the function requires upper parameter bounds\n", call. = FALSE)
 	
 	# allow for fixed parameters (i.e. non randomly chosen), but require pars vector in that case
-	if(!is.null(fixed) && is.null(pars)) stop("\nstartpars-->error: you need to provide a pars vector if using the fixed option\n", call. = FALSE)
+	if(!is.null(fixed) && is.null(pars)) 
+		stop("\nstartpars-->error: you need to provide a pars vector if using the fixed option\n", call. = FALSE)
 	if(!is.null(pars)) n = length(pars) else n = length(LB)
 	
-	np = 1:n
+	np = seq_len(n)
 	
 	if(!is.null(fixed)){
 		# make unique
 		fixed = unique(fixed)
 		# check for violations in indices
-		if(any(is.na(match(fixed, np)))) stop("\nstartpars-->error: fixed indices out of bounds\n", call. = FALSE)
+		if(any(is.na(match(fixed, np)))) 
+			stop("\nstartpars-->error: fixed indices out of bounds\n", call. = FALSE)
 	}
 	
 	# check distribution options
@@ -208,195 +206,111 @@ startpars = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, i
 	if(any(distr == 2)){
 		d2 = which(distr == 2)
 		for(i in 1:length(d2)) {
-			if(is.null(distr.opt[[d2[i]]]$mean)) stop(paste("\nstartpars-->error: distr.opt[[,",d2[i],"]] missing mean\n", sep = ""), 
-						call. = FALSE)
-			if(is.null(distr.opt[[d2[i]]]$sd)) stop(paste("\nstartpars-->error: distr.opt[[,",d2[i],"]] missing sd\n", sep = ""), 
-						call. = FALSE)
+			if(is.null(distr.opt[[d2[i]]]$mean)) 
+				stop(paste("\nstartpars-->error: distr.opt[[,",d2[i],"]] missing mean\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d2[i]]]$sd)) 
+				stop(paste("\nstartpars-->error: distr.opt[[,",d2[i],"]] missing sd\n", sep = ""), call. = FALSE)
 		}
 	}
 	#  normal
 	if(any(distr == 3)){
 		d3 = which(distr == 3)
 		for(i in 1:length(d3)) {
-			if(is.null(distr.opt[[d3[i]]]$mean)) stop(paste("\nstartpars-->error: distr.opt[[,",d3[i],"]] missing mean\n", sep = ""), call. = FALSE)
-			if(is.null(distr.opt[[d3[i]]]$sd)) stop(paste("\nstartpars-->error: distr.opt[[,",d3[i],"]] missing sd\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d3[i]]]$mean)) 
+				stop(paste("\nstartpars-->error: distr.opt[[,",d3[i],"]] missing mean\n", sep = ""), call. = FALSE)
+			if(is.null(distr.opt[[d3[i]]]$sd)) 
+				stop(paste("\nstartpars-->error: distr.opt[[,",d3[i],"]] missing sd\n", sep = ""), call. = FALSE)
 		}
 	}
+	
+	# setup cluster exports:
+	if( !is.null(cluster) ){		
+		parallel::clusterExport(cluster, c("gosolnp_parnames", "fun", "eqfun", 
+						"eqB", "ineqfun", "ineqLB", "ineqUB", "LB", "UB"), envir = environment())
+		if( !is.null(names(list(...))) ){
+			# evaluate promises
+			xl = names(list(...))
+			for(i in 1:length(xl)){
+				eval(parse(text=paste(xl[i],"=list(...)"[[i]],sep="")))
+			}
+			parallel::clusterExport(cluster, names(list(...)), envir = environment())
+		}
+		if( !is.null(names(list(...))) ) parallel::clusterExport(cluster, names(list(...)), envir = environment())
+		parallel::clusterEvalQ(cluster, require(Rsolnp))
+	}
+	
 	# initiate random search
-	spars = switch(parmethod,
-	.randpars(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, eqB = eqB,  
-					ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, 
-					distr = distr, distr.opt = distr.opt, n.restarts = as.integer(bestN), n.sim = n.sim,
-					rseed = rseed, trace = trace, xnames, parallel = parallel, parallel.control = parallel.control, ...),		
-	.randpars2(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, eqB = eqB,  
-			ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, LB = LB, UB = UB, 
-			distr = distr, distr.opt = distr.opt, n.restarts = as.integer(bestN), n.sim = n.sim,
-			rseed = rseed, trace = trace, xnames, parallel = parallel, parallel.control = parallel.control, ...))
-	return(spars)
+	gosolnp_rndpars = switch(parmethod,
+			.randpars(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, 
+					eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, 
+					LB = LB, UB = UB, distr = distr, distr.opt = distr.opt, 
+					n.restarts = as.integer(bestN), n.sim = n.sim, trace = trace, 
+					rseed = rseed, gosolnp_parnames = gosolnp_parnames, 
+					cluster = cluster, ...),		
+			.randpars2(pars = pars, fixed = fixed, fun = fun, eqfun = eqfun, 
+					eqB = eqB, ineqfun = ineqfun, ineqLB = ineqLB, ineqUB = ineqUB, 
+					LB = LB, UB = UB, distr = distr, distr.opt = distr.opt, 
+					n.restarts = as.integer(bestN), n.sim = n.sim, trace = trace, 
+					rseed = rseed, gosolnp_parnames = gosolnp_parnames, 
+					cluster = cluster, ...))
+	return(gosolnp_rndpars)
 }
 
 
-# form a barrier function before passing the parameters
-.randpars2 = function(pars, fixed, fun, eqfun, eqB,  ineqfun, ineqLB, ineqUB, LB, UB, 
-		distr, distr.opt, n.restarts, n.sim, rseed, trace = TRUE, xnames, parallel = FALSE,
-		parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), ...)
+.randpars = function(pars, fixed, fun, eqfun, eqB,  ineqfun, ineqLB, ineqUB, 
+		LB, UB, distr, distr.opt, n.restarts, n.sim, trace = TRUE, rseed, 
+		gosolnp_parnames, cluster, ...)
 {
-	if(trace) cat("\nCalculating Random Initialization Parameters...")
-	tmpenvir <- environment()
-	assign("xnames", xnames, envir = tmpenvir)
+	if( trace ) cat("\nCalculating Random Initialization Parameters...")
 	N = length(LB)
-	idx = "a"
-	R = NULL
-	if(!is.null(ineqfun) && is.null(eqfun) ){
-		idx = "b"
-		R = 100
-	}
-	if( is.null(ineqfun) && !is.null(eqfun) ){
-		idx = "c"
-		R = 100
-	}
-	if(!is.null(ineqfun) && !is.null(eqfun) ){
-		idx = "d"
-		R = c(100,100)
-	}
-	
-	rndpars = matrix(NA, ncol = N, nrow = n.sim * n.restarts)
-	
-	if(!is.null(fixed)) for(i in 1:length(fixed)) rndpars[,fixed[i]] = pars[fixed[i]]
-	
+	gosolnp_rndpars = matrix(NA, ncol = N, nrow = n.sim * n.restarts)
+	if(!is.null(fixed)) for(i in 1:length(fixed)) gosolnp_rndpars[,fixed[i]] = pars[fixed[i]]
 	nf = 1:N
-	
 	if(!is.null(fixed)) nf = nf[-c(fixed)]
-	
 	m = length(nf)
-	
 	set.seed(rseed)
-	
 	for(i in 1:m){
 		j = nf[i]
-		rndpars[,j] = switch(distr[j],
+		gosolnp_rndpars[,j] = switch(distr[j],
 				.distr1(LB[j], UB[j], n.restarts*n.sim),
 				.distr2(LB[j], UB[j], n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd),
 				.distr3(n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd)
 		)
 	}
-	if(trace) cat("ok!\n")
-	# evaluate function value
-	if(trace) cat("\nEvaluating Objective Function with Random Sampled Parameters...")
-	if( parallel ){
-		nx = dim(rndpars)[1]
-		os = .Platform$OS.type
-		if(is.null(parallel.control$pkg)){
-			if( os == "windows" ) parallel.control$pkg = "snowfall" else parallel.control$pkg = "multicore"
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2
-		} else{
-			mtype = match(tolower(parallel.control$pkg[1]), c("multicore", "snowfall"))
-			if(is.na(mtype)) stop("\nParallel Package type not recognized in parallel.control\n")
-			parallel.control$pkg = tolower(parallel.control$pkg[1])
-			if( os == "windows" && parallel.control$pkg == "multicore" ) stop("\nmulticore not supported on windows O/S\n")
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2 else parallel.control$cores = as.integer(parallel.control$cores[1])
-		}
-		if( parallel.control$pkg == "multicore" ){
-			
-			if(!exists("mclapply")){
-				require('multicore')
-			}
-			evfun = mclapply(1:nx, FUN = function(i) .lagrfun(c(rndpars[i,],R), m, idx, fun, eqfun, eqB, ineqfun, ineqLB, ineqUB, ...), 
-					mc.cores = parallel.control$cores)
-			evfun = as.numeric( unlist(evfun) )
-		} else{
-			if(!exists("sfLapply")){
-				library('snowfall', pos = "package:base")
-			}
-			sfInit(parallel = TRUE, cpus = parallel.control$cores)
-			sfExport("rndpars", "fun", "eqfun", "eqB", "ineqfun", "ineqLB", "ineqUB",  "m", "idx", "R", "...", local = TRUE)
-			evfun = sfLapply(as.list(1:nx), fun = function(i) Rsolnp:::.lagrfun(c(rndpars[i,],R), m, idx, 
-								fun, eqfun, eqB, ineqfun, ineqLB, ineqUB, ...))
-			sfStop()
-			evfun = as.numeric( unlist(evfun) )
-		}
-	} else{
-		evfun = apply(rndpars, 1, FUN = function(x) .lagrfun(c(x,R), m, idx, fun, eqfun, eqB, ineqfun, ineqLB, ineqUB, ...))
-	}
-	if(trace) cat("ok!\n")
-	if(trace) cat("\nSorting and Choosing Best Candidates for starting Solver...")	
-	z = sort.int(evfun, index.return = T)
-	#distmat = dist(evfun, method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
-	ans = rndpars[z$ix[1:n.restarts],,drop = FALSE]
-	prtable = cbind(ans, z$x[1:n.restarts])
-	colnames(prtable) = c(paste("par", 1:N, sep = ""), "objf")
-	if(trace){
-		cat("\nStarting Parameters and Starting Objective Function:\n")
-		if(n.restarts == 1) print(t(prtable), digits = 4) else print(prtable, digits = 4)
-	}
-	rm(tmpenvir)
-	return(prtable)
-}
-
-.randpars = function(pars, fixed, fun, eqfun, eqB,  ineqfun, ineqLB, ineqUB, LB, UB, 
-		distr, distr.opt, n.restarts, n.sim, trace = TRUE, rseed, xnames, parallel = FALSE,
-		parallel.control = list(pkg = c("multicore", "snowfall"), cores = 2), ...)
-{
-	if(trace) cat("\nCalculating Random Initialization Parameters...")
-	tmpenvir <- environment()
-	assign("xnames", xnames, envir = tmpenvir)
-	N = length(LB)
 	
-	rndpars = matrix(NA, ncol = N, nrow = n.sim * n.restarts)
-	
-	if(!is.null(fixed)) for(i in 1:length(fixed)) rndpars[,fixed[i]] = pars[fixed[i]]
-	
-	nf = 1:N
-	
-	if(!is.null(fixed)) nf = nf[-c(fixed)]
-	
-	m = length(nf)
-	
-	set.seed(rseed)
-	
-	for(i in 1:m){
-		j = nf[i]
-		rndpars[,j] = switch(distr[j],
-				.distr1(LB[j], UB[j], n.restarts*n.sim),
-				.distr2(LB[j], UB[j], n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd),
-				.distr3(n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd)
-				)
-	}
-	
-	if(trace) cat("ok!\n")
+	if( trace ) cat("ok!\n")
 	
 	if(!is.null(ineqfun)){
-		if(trace) cat("\nExcluding Inequality Violations...\n")
+		if( trace ) cat("\nExcluding Inequality Violations...\n")
 		ineqv = matrix(NA, ncol = length(ineqLB), nrow = n.restarts*n.sim)
-		
 		# ineqv = t(apply(rndpars, 1, FUN = function(x) ineqfun(x)))
 		if(length(ineqLB) == 1){
-			ineqv = apply(rndpars, 1, FUN = function(x){
-								names(x) = xnames
-								ineqfun(x, ...)} )
+			ineqv = apply(gosolnp_rndpars, 1, FUN = function(x){
+						names(x) = gosolnp_parnames
+						ineqfun(x, ...)} )
 			lbviol = sum(ineqv<ineqLB)
 			ubviol = sum(ineqv>ineqUB)
 			if( lbviol > 0 | ubviol > 0 ){
 				vidx = c(which(ineqv<ineqLB), which(ineqv>ineqUB))
 				vidx = unique(vidx)
-				rndpars = rndpars[-c(vidx),]
+				gosolnp_rndpars = gosolnp_rndpars[-c(vidx),]
 				lvx = length(vidx)
 			} else{
 				vidx = 0
 				lvx = 0
 			}
 		} else{
-			ineqv = t(apply(rndpars, 1, FUN = function(x){
-			names(x) = xnames
-			ineqfun(x, ...)} ))
-		
+			ineqv = t(apply(gosolnp_rndpars, 1, FUN = function(x){
+								names(x) = gosolnp_parnames
+								ineqfun(x, ...)} ))
+			
 			# check lower and upper violations
 			lbviol = apply(ineqv, 1, FUN = function(x) sum(any(x<ineqLB)))
 			ubviol = apply(ineqv, 1, FUN = function(x) sum(any(x>ineqUB)))
 			if( any(lbviol > 0) | any(ubviol > 0) ){
 				vidx = c(which(lbviol>0), which(ubviol>0))
 				vidx = unique(vidx)
-				rndpars = rndpars[-c(vidx),]
+				gosolnp_rndpars = gosolnp_rndpars[-c(vidx),]
 				lvx = length(vidx)
 				
 			} else{
@@ -404,79 +318,119 @@ startpars = function(pars = NULL, fixed = NULL, fun, eqfun = NULL, eqB = NULL, i
 				lvx = 0
 			}
 		}
-		if(trace) cat(paste("\n...Excluded ", lvx, "/",n.restarts*n.sim, " Random Sequences\n", sep = ""))
+		if( trace ) cat(paste("\n...Excluded ", lvx, "/",n.restarts*n.sim, " Random Sequences\n", sep = ""))
 	}
-	
 	# evaluate function value
-	if(trace) cat("\nEvaluating Objective Function with Random Sampled Parameters...")
-	if( parallel ){
-		nx = dim(rndpars)[1]
-		os = .Platform$OS.type
-		if(is.null(parallel.control$pkg)){
-			if( os == "windows" ) parallel.control$pkg = "snowfall" else parallel.control$pkg = "multicore"
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2
-		} else{
-			mtype = match(tolower(parallel.control$pkg[1]), c("multicore", "snowfall"))
-			if(is.na(mtype)) stop("\nParallel Package type not recognized in parallel.control\n")
-			parallel.control$pkg = tolower(parallel.control$pkg[1])
-			if( os == "windows" && parallel.control$pkg == "multicore" ) stop("\nmulticore not supported on windows O/S\n")
-			if( is.null(parallel.control$cores) ) parallel.control$cores = 2 else parallel.control$cores = as.integer(parallel.control$cores[1])
-		}
-		if( parallel.control$pkg == "multicore" ){
-			
-			if(!exists("mclapply")){
-				require('multicore')
-			}
-				evfun = mclapply(1:nx, FUN = function(i) .safefun(rndpars[i, ], fun, .env = tmpenvir, ...), 
-						mc.cores = parallel.control$cores)
-				evfun = as.numeric( unlist(evfun) )
-		} else{
-			if(!exists("sfLapply")){
-				library('snowfall', pos = "package:base")
-			}
-			sfInit(parallel = TRUE, cpus = parallel.control$cores)
-			sfExport("rndpars", "fun", "tmpenvir", "...", local = TRUE)
-			evfun = sfLapply(as.list(1:nx), fun = function(i) Rsolnp:::.safefun(rndpars[i, ], fun, .env = tmpenvir, ...))
-			sfStop()
-			evfun = as.numeric( unlist(evfun) )
-		}
+	if( trace ) cat("\nEvaluating Objective Function with Random Sampled Parameters...")
+	if( !is.null(cluster) ){
+		nx = dim(gosolnp_rndpars)[1]
+		parallel::clusterExport(cluster, c("gosolnp_rndpars", ".safefun"), envir = environment())
+		evfun = parallel::parLapply(cluster, as.list(1:nx), fun = function(i){ 
+					.safefun(gosolnp_rndpars[i, ], fun, gosolnp_parnames, ...) 
+				})
+		evfun = as.numeric( unlist(evfun) )
 	} else{
-		evfun = apply(rndpars, 1, FUN = function(x) .safefun(x, fun, .env = tmpenvir, ...))
+		evfun = apply(gosolnp_rndpars, 1, FUN = function(x) .safefun(x, fun, gosolnp_parnames, ...))
 	}
-	if(trace) cat("ok!\n")
-	
-	if(trace) cat("\nSorting and Choosing Best Candidates for starting Solver...")
+	if( trace ) cat("ok!\n")
+	if( trace ) cat("\nSorting and Choosing Best Candidates for starting Solver...")
 	z = sort.int(evfun, index.return = T)
-	ans = rndpars[z$ix[1:n.restarts],,drop = FALSE]
+	ans = gosolnp_rndpars[z$ix[1:n.restarts],,drop = FALSE]
 	prtable = cbind(ans, z$x[1:n.restarts])
-	if(trace) cat("ok!\n")
-	
+	if( trace ) cat("ok!\n")
 	colnames(prtable) = c(paste("par", 1:N, sep = ""), "objf")
-	if(trace){
+	if( trace ){
 		cat("\nStarting Parameters and Starting Objective Function:\n")
 		if(n.restarts == 1) print(t(prtable), digits = 4) else print(prtable, digits = 4)
 	}
-	rm(tmpenvir)
 	return(prtable)
 }
 
-# Barrier Function
-
-pclfn = function(x){
-	z=x
-	z[x<=0] = 0
-	z[x>0] = (0.9+z[x>0])^2
-	z
-}
-.lagrfun = function(pars, m, idx, fun, eqfun = NULL, eqB = 0, ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, ...)
+# form a barrier function before passing the parameters
+.randpars2 = function(pars, fixed, fun, eqfun, eqB,  ineqfun, ineqLB, ineqUB, LB, 
+		UB, distr, distr.opt, n.restarts, n.sim, rseed, trace = TRUE, 
+		gosolnp_parnames, cluster, ...)
 {
-	fn = switch(idx,
-			"a" = fun(pars[1:m], ...),
-			"b" = fun(pars[1:m], ...) + pars[m+1]* sum( pclfn( c(ineqLB - ineqfun(pars[1:m], ...), ineqfun(pars[1:m], ...) - ineqUB) ) ),
-			"c" = fun(pars[1:m], ...) + sum( (eqfun(pars[1:m], ...) - eqB )^2 / pars[m+1]),
-			"d" = fun(pars[1:m], ...) + sum( (eqfun(pars[1:m], ...) - eqB )^2 / pars[m+1]) + pars[m+2]* sum( pclfn( c(ineqLB - ineqfun(pars[1:m], ...), ineqfun(pars[1:m], ...) - ineqUB) ) ) )
-	return(fn)
+	if( trace ) cat("\nCalculating Random Initialization Parameters...")
+	N = length(LB)
+	gosolnp_idx = "a"
+	gosolnp_R = NULL
+	if(!is.null(ineqfun) && is.null(eqfun) ){
+		gosolnp_idx = "b"
+		gosolnp_R = 100
+	}
+	if( is.null(ineqfun) && !is.null(eqfun) ){
+		gosolnp_idx = "c"
+		gosolnp_R = 100
+	}
+	if(!is.null(ineqfun) && !is.null(eqfun) ){
+		gosolnp_idx = "d"
+		gosolnp_R = c(100,100)
+	}
+	gosolnp_rndpars = matrix(NA, ncol = N, nrow = n.sim * n.restarts)
+	if(!is.null(fixed)) for(i in 1:length(fixed)) gosolnp_rndpars[,fixed[i]] = pars[fixed[i]]
+	nf = 1:N
+	if(!is.null(fixed)) nf = nf[-c(fixed)]
+	gosolnp_m = length(nf)
+	set.seed(rseed)
+	for(i in 1:gosolnp_m){
+		j = nf[i]
+		gosolnp_rndpars[,j] = switch(distr[j],
+				.distr1(LB[j], UB[j], n.restarts*n.sim),
+				.distr2(LB[j], UB[j], n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd),
+				.distr3(n.restarts*n.sim, mean = distr.opt[[j]]$mean, sd = distr.opt[[j]]$sd)
+		)
+	}
+	if( trace ) cat("ok!\n")
+	# Barrier Function
+	pclfn = function(x){
+		z=x
+		z[x<=0] = 0
+		z[x>0] = (0.9+z[x>0])^2
+		z
+	}
+	.lagrfun = function(pars, m, idx, fun, eqfun = NULL, eqB = 0, ineqfun = NULL, ineqLB = NULL, ineqUB = NULL, ...)
+	{
+		fn = switch(idx,
+				"a" = fun(pars[1:m], ...),
+				"b" = fun(pars[1:m], ...) + pars[m+1]* sum( pclfn( c(ineqLB - ineqfun(pars[1:m], ...), ineqfun(pars[1:m], ...) - ineqUB) ) ),
+				"c" = fun(pars[1:m], ...) + sum( (eqfun(pars[1:m], ...) - eqB )^2 / pars[m+1]),
+				"d" = fun(pars[1:m], ...) + sum( (eqfun(pars[1:m], ...) - eqB )^2 / pars[m+1]) + pars[m+2]* sum( pclfn( c(ineqLB - ineqfun(pars[1:m], ...), ineqfun(pars[1:m], ...) - ineqUB) ) ) )
+		return(fn)
+	}
+	
+	# evaluate function value
+	if( trace ) cat("\nEvaluating Objective Function with Random Sampled Parameters...")
+	if( !is.null(cluster) ){
+		nx = dim(gosolnp_rndpars)[1]
+		parallel::clusterExport(cluster, c("gosolnp_rndpars", "gosolnp_m", "gosolnp_idx", 
+						"gosolnp_R"), envir = environment())
+		parallel::clusterExport(cluster, c("pclfn", ".lagrfun"), envir = environment())
+		evfun = parallel::parLapply(cluster, as.list(1:nx), fun = function(i){
+					.lagrfun(c(gosolnp_rndpars[i,], gosolnp_R), gosolnp_m, 
+							gosolnp_idx, fun, eqfun, eqB, ineqfun, ineqLB, 
+							ineqUB, ...)
+				})
+		evfun = as.numeric( unlist(evfun) )
+	} else{
+		evfun = apply(gosolnp_rndpars, 1, FUN = function(x){
+					.lagrfun(c(x,gosolnp_R), gosolnp_m, gosolnp_idx, fun, eqfun, 
+							eqB, ineqfun, ineqLB, ineqUB, ...)})
+	}
+	if( trace ) cat("ok!\n")
+	if( trace ) cat("\nSorting and Choosing Best Candidates for starting Solver...")	
+	z = sort.int(evfun, index.return = T)
+	#distmat = dist(evfun, method = "euclidean", diag = FALSE, upper = FALSE, p = 2)
+	ans = gosolnp_rndpars[z$ix[1:n.restarts],,drop = FALSE]
+	prtable = cbind(ans, z$x[1:n.restarts])
+	colnames(prtable) = c(paste("par", 1:N, sep = ""), "objf")
+	if( trace ){
+		cat("\nStarting Parameters and Starting Objective Function:\n")
+		if(n.restarts == 1) print(t(prtable), digits = 4) else print(prtable, digits = 4)
+	}
+	return(prtable)
 }
+
 
 .distr1 = function(LB, UB, n)
 {
@@ -485,10 +439,21 @@ pclfn = function(x){
 
 .distr2 = function(LB, UB, n, mean, sd)
 {
-	rtruncnorm(n, a = as.double(LB), b = as.double(UB), mean = as.double(mean), sd = as.double(sd))
+	truncnorm::rtruncnorm(n, a = as.double(LB), b = as.double(UB), mean = as.double(mean), sd = as.double(sd))
 }
 
 .distr3 = function(n, mean, sd)
 {
 	rnorm(n, mean = mean, sd = sd)
+}
+
+.safefun = function(pars, fun, gosolnp_parnames, ...){
+	# gosolnp_parnames = get("gosolnp_parnames", envir = .env)
+	names(pars) = gosolnp_parnames
+	v  = fun(pars, ...)
+	if(is.na(v) | !is.finite(v) | is.nan(v)) {
+		warning(paste("\ngosolnp-->warning: ", v , " detected in function call...check your function\n", sep = ""), immediate. = FALSE)
+		v = 1e24
+	}
+	v
 }

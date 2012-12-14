@@ -1,3 +1,13 @@
+2012-12-05  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.14
+	* Change to parallel functionality for gosolnp. Now makes use of the
+	parallel package where the user has to pass an initialized cluster 
+	object (also fixes Windows paralllel functionality problems).
+	
+2012-05-22  Alexios Ghalanos <alexios@4dscape.com>
+	* DESCRIPTION (Version): New version is 1.13
+	* Fix to rtruncnorm call.
+	
 2012-05-22  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.12
 	* Fix to .onLoad in zzz.R
