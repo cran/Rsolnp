@@ -9,8 +9,8 @@ multiplier method solver (SQP based solver).}
 \tabular{ll}{
 Package: \tab Rsolnp\cr
 Type: \tab Package\cr
-Version: \tab 1.14\cr
-Date: \tab 2012-12-05\cr
+Version: \tab 1.15\cr
+Date: \tab 2013-04-10\cr
 License: \tab GPL\cr
 LazyLoad: \tab yes\cr
 Depends: \tab stats, truncnorm, parallel\cr}

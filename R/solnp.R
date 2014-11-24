@@ -344,6 +344,6 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 	names(p) = xnames
 	ans = list(pars = p, convergence = convergence, values = as.numeric(jh), lagrange = lambda, 
 			hessian = hessv, ineqx0 = ineqx0, nfuneval = ctmp, outer.iter = .solnp_iter, 
-			elapsed = toc)
+			elapsed = toc, vscale = vscale)
 	return( ans )
 }
