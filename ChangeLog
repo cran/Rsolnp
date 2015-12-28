@@ -1,17 +1,27 @@
-2014-11-24  Alexios Ghalanos <alexios@4dscape.com>
+2015-07-02  Alexios Ghalanos <alexios@4dscape.com>
+  * DESCRIPTION (Version): New version is 1.16
+	* Fix to gosolnp for one parameter case thanks to
+David Lawrence Miller.
+  	* Fix to parallel gosolnp not passing multiple function
+arguments (bug reported by Alex Karagiannis).
+  	* rep argument in solnp.R had length rather than length.out (leading
+  to cases name conflict).
+	* Fix to pass new CRAN checks which only attach base.
+
+2013-04-10  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.15
-	* Fixes to pass CRAN checks
+	* Fixes to pass 3.0.0
 
 2012-12-05  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.14
 	* Change to parallel functionality for gosolnp. Now makes use of the
-	parallel package where the user has to pass an initialized cluster 
+	parallel package where the user has to pass an initialized cluster
 	object (also fixes Windows paralllel functionality problems).
-	
+
 2012-05-22  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.13
 	* Fix to rtruncnorm call.
-	
+
 2012-05-22  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.12
 	* Fix to .onLoad in zzz.R
@@ -22,7 +32,7 @@
 	* New function startpars directly returns a set of starting parameters ranked according
 	to either a direct evaluation of the objective (excluding any inequality violations) else
 	a penalty barrier function comprising the objective and constraints.
-	
+
 2011-07-06  Alexios Ghalanos <alexios@4dscape.com>
 	* DESCRIPTION (Version): New version is 1.1
 	* Correction to bug when terminating without solution (introduced in last update).
@@ -32,12 +42,12 @@
 	* Added more traps to catch errors in inverting the hessian during the inner step.
 	Convergence codes are now (0 - solution), (1 - maximum iterations without tolerance),
 	(2 - no convergence, failure to invert Hessian).
-	
+
 2011-01-03  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0-8
-	* Parallel functionality changed in 'gosolnp' function to make use of both multicore and snowfall 
-	packages (i.e. windows multicore functionality now possible). This also opens the possibility for 
+	* Parallel functionality changed in 'gosolnp' function to make use of both multicore and snowfall
+	packages (i.e. windows multicore functionality now possible). This also opens the possibility for
 	future extensions to use snowfall with Rmpi for cluster processing.
 
 2010-10-01  Alexios Ghalanos <alexios@4dscape.com>
@@ -61,7 +71,7 @@
 	* DESCRIPTION (Version): New version is 1.0-5
 	* Trace parameter was not correctly passed to gosolnp. Also minor
 	corrections to trace parameter in solnp (i.e. warnings off).
-		
+
 2010-06-27  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0-4
@@ -84,15 +94,15 @@
 
 	* DESCRIPTION (Version): New version is 1.0-1
 	* CITATION file: added
-	
+
 2010-03-10  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 1.0
 	* Release version for CRAN
-	* Added a function to generate random starting parameters and allow 
+	* Added a function to generate random starting parameters and allow
 	for multiple restarts of the solver.
 	* Some more benchmark problems to test the gosolnp function.
-		
+
 2009-09-15  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 0.3.
@@ -100,7 +110,7 @@
 	of function evaluation.
 	* Minor Fixes
 	* More Checks to input functions
-	
+
 2009-05-21  Alexios Ghalanos <alexios@4dscape.com>
 
 	* DESCRIPTION (Version): New version is 0.2.

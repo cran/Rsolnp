@@ -242,7 +242,7 @@ solnp = function(pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, ineqLB = N
 			vscale = c(vscale, p)
 		} else {
 			# [ 1 neq np]
-			vscale = c(vscale, rep( 1, length = length(p) ) )
+			vscale = c(vscale, rep( 1, length.out = length(p) ) )
 		}
 		
 		vscale = apply( matrix(vscale, ncol = 1), 1, FUN = function( x ) min( max( abs(x), tol ), 1/tol ) )
