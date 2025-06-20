@@ -1,0 +1,315 @@
+---
+title: "Introduction to SOLNP ver 2.0.0"
+output: 
+    rmarkdown::html_vignette:
+        css: custom.css
+        code_folding: hide
+        citation_package: natbib
+        toc: yes
+bibliography: references.bib
+bibliography-style: apalike
+natbiboptions: round
+vignette: >
+  %\VignetteIndexEntry{Introduction to SOLNP ver 2.0.0}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(Rsolnp)
+```
+
+## Introduction
+
+The SOLNP algorithm, first proposed by @Ye1989, is a Sequential Quadratic 
+Programming (SQP) approach designed to solve general nonlinear optimization 
+problems with both equality and inequality constraints. In 2010, it was 
+implemented in R as the Rsolnp package, originally to fill the need for a robust 
+and flexible constrained optimizer required by the author’s own GARCH modeling 
+package, [rugarch](https://cran.r-project.org/package=rugarch). Since then, 
+Rsolnp has remained one of the few readily available and user-friendly options 
+for nonlinear constrained optimization in R.
+
+Despite the growth of R’s ecosystem in statistics and data science, the development 
+and availability of modern nonlinear constrained optimization solvers in R has 
+lagged behind other languages, with notable exceptions being [nloptr](https://cran.r-project.org/package=nloptr) (which wraps NLopt solvers) and [ipoptr](https://github.com/jyypma/ipoptr) (an 
+R interface to the IPOPT solver)^[the latter is no longer available on CRAN due 
+to licensing issues]. Moreover, in the nonlinear programming (NLP) space, most 
+state-of-the-art solvers remain closed source and commercial, in contrast to other 
+algorithmic advances that have transitioned from academia to open-source availability.
+
+Rsolnp does not claim to be competitive with commercial grade nonlinear solvers,
+but it has generally served its purpose reasonably well for small to medium 
+sized problems.
+
+## Problem Statement
+
+The general nonlinear optimization problem addressed by SOLNP can be stated as follows:
+
+$$
+\begin{align}
+& \min_{x \in \mathbb{R}^n} \quad f(x) \\\\
+& \text{subject to:} \\\\
+& \quad l_g \leq g(x) \leq u_g \qquad \text{(general inequality constraints)} \\\\
+& \quad h(x) = B \qquad \text{(equality constraints with bound vector \(B\))} \\\\
+& \quad x^L \leq x \leq x^U \qquad \text{(variable bounds)}
+\end{align}
+$$
+
+where:
+
+ - $f(x)$: Nonlinear objective function to minimize
+ - $g(x)$: Vector of general nonlinear inequality constraint functions, with lower and upper bounds $l_g$, $u_g$
+ - $h(x)$: Vector of nonlinear equality constraint functions, required to be equal to vector B
+ - $x^L$, $x^U$: Lower and upper bounds for the variables
+
+Note:
+
+ - Standard equality constraints of the form $h(x) = 0$ can be recovered by setting B = 0.
+ - General inequality constraints allow for two-sided bounds (e.g., $l_g < g(x) < u_g$), 
+ not just upper or lower bounds individually.
+
+
+### Inequalities
+
+Each inequality constraint $l_i \leq g_i(x) \leq u_i$ is transformed into two 
+equality constraints via slack variables. Introduce slack variable $s_i \geq 0$, 
+then define:
+
+$$
+h_i(x, s_i) = g_i(x) - s_i = l_i \quad \text{if } g_i(x) \geq l_i \\
+h_i(x, s_i) = g_i(x) + s_i = u_i \quad \text{if } g_i(x) \leq u_i
+$$
+
+
+This can be unified into:
+
+$$
+g_i(x) - s_i = l_i \quad \text{and} \quad g_i(x) + s_i = u_i
+$$
+
+
+So every bounded inequality becomes an equality constraint with a slack, and the 
+slack becomes part of the optimization variable vector.
+
+In the actual implementation, if a constraint is double-bounded, a 
+"penalty equality constraint" is introduced $h_i(x, s_i) := g_i(x) - s_i = m_i$
+and add a penalty term to objective if $s_i < 0$.
+
+### Slack Variable Embedding
+
+The augmented optimization vector becomes:
+
+$\tilde{x} = \begin{bmatrix} x \\ s \end{bmatrix}$
+
+And the original constraints are reformulated into a system of equalities only:
+
+$$
+\tilde{g}(x, s) =
+\begin{bmatrix}
+g_{\text{eq}}(x) \\
+g_{\text{ineq}}(x) - s - l \\
+g_{\text{ineq}}(x) + s - u
+\end{bmatrix} = 0
+$$
+
+### Optimization via Augmented Lagrangian
+
+Unlike traditional SQP, SOLNP does not explicitly solve for the Karush–Kuhn–Tucker 
+(KKT) conditions. Instead, it uses a partial augmented Lagrangian:
+
+$$
+L(x, \lambda, \rho) = f(x) + \lambda^\top g(x) + \frac{\rho}{2} \|g(x)\|^2
+$$
+
+where:
+
+  - $g(x)$ contains only equality constraints (as inequalities are transformed)
+  - $\lambda$ are Lagrange multipliers (estimated iteratively)
+  - $\rho$ is the penalty parameter
+
+### No Stationarity-Based KKT Step
+
+Unlike SQP or interior-point methods, SOLNP does not solve the full KKT system 
+at each iteration, instead using:
+
+  - a quadratic local model
+  - a trust-region style step
+  - penalty-based adjustment (via $\rho$)
+
+The stationarity check is only implicit in terms of convergence of $\nabla f + J^\top \lambda \to 0$, 
+not enforced directly.
+
+### Why Higher Tolerances Are Not Preferred
+
+Setting the tolerance in SOLNP (or augmented Lagrangian solvers) much tighter 
+than 1e-8—such as 1e-12—can actually degrade solution quality because the algorithm 
+becomes sensitive to numerical round-off and finite precision errors, especially 
+in gradient and Hessian computations or matrix solves. As the tolerance approaches 
+the limits of double-precision arithmetic, the solver may "chase noise" rather than 
+real improvements, leading to erratic or even worse solutions, with unreliable 
+convergence and possible violation of constraints. For most problems, practical 
+and reliable results are achieved with tolerances in the 1e-6 to 1e-8 range.
+
+
+## C++ Version
+
+The original solnp function did not make use of analytic gradients or Jacobians,
+and was written entirely in R, a direct translation from the Matlab code. Since 
+version 2.0.0, a new function `csolnp`, written in C++^[Using [Rcpp](https://cran.r-project.org/package=Rcpp) 
+and [RcppArmadillo](https://cran.r-project.org/package=RcppArmadillo)] allows the user 
+to provide analytic gradient and/or Jacobians for the inequality and equality constraints. 
+In the absence of analytic functions, finite differences are used using the functions from the [numDeriv](https://cran.r-project.org/package=numDeriv) package.
+
+The function signature for the csolnp function is now slightly different from that
+of solnp in both content and code styling:
+
+```{r}
+args(csolnp)
+```
+
+vs 
+
+```{r}
+args(solnp)
+```
+
+
+Speedup of anywhere up to 10x can be expected for some problems. Additionally, 
+certain enhancements have been made in the C++ code in regards to criteria for
+early termination to avoid stalling in the line search phase.
+
+## Multi-Start Solver
+
+A new function `csolnp_ms` implements a multi-start strategy, similar to the 
+existing `gosolnp` function. However, it differs in the way starting candidate 
+values are calculated, with the original function using rejection sampling to 
+find feasible starting points, whilst the new function uses a combination of 
+buffered box sampling and a fast interior-point feasibility projection. This 
+approach efficiently generates initial values that strictly satisfy parameter 
+bounds and nonlinear constraints by first sampling points slightly away from the 
+boundaries and then rapidly projecting them into the feasible region using a 
+penalized minimization. This results in more reliable and diverse initial 
+candidates for multi-start optimization, especially in problems with complex or 
+tightly constrained feasible regions.
+
+## Test Suite
+
+As of version 2.0.0, a new test suite based on @Hock1980 and @Schittkowski2012
+has been included, translated from the Fortran codes 
+[here](https://klaus-schittkowski.de/tpnp.htm). Currently, about 60 problems
+of the 306 have been translated, and it is the intention of the author to 
+eventually translate all the tests.
+
+Each test, returns a list with the following information:
+
+ - fn : the objective function
+ - gr : the analytic gradient function
+ - eq_fn : the equality function
+ - eq_b : the equality bounds
+ - eq_jac : the Jacobian of the equality function
+ - ineq_fn : the inequality function
+ - ineq_lower : the lower bounds for the inequalities
+ - ineq_upper : the upper bounds for the inequalities
+ - ineq_jac : the Jacobian of the inequality function
+ - lower : lower parameter bounds
+ - upper : upper parameter bounds
+ - start : initialization parameters
+ - best_fn : best known optimal objective
+ - best_par : best known optimal parameters
+ - name : test name
+ 
+The suite can be called at once or by reference to a specific test, as illustrated
+below.
+
+```{r}
+prob <- solnp_problem_suite(number = 10)
+sol <- csolnp(pars = prob$start, fn = prob$fn, gr = prob$gr, eq = prob$eq_fn, eq_b = prob$eq_b, 
+              eq_jac = prob$eq_jac, ineq_fn = prob$ineq_fn, ineq_lower = prob$ineq_lower, 
+              ineq_upper = prob$ineq_upper, ineq_jac = prob$ineq_jac, lower = prob$lower,
+              upper = prob$upper)
+print(prob$name)
+print(c("convergence" = sol$convergence))
+print(c("csolnp objective" = sol$objective, "best objective" = prob$best_fn))
+print(sol$elapsed_time)
+```
+
+We also test a more specific problem based on the GARCH(1,1) model with analytic
+derivatives:
+
+```{r}
+prob <- solnp_problem_suite(suite = "Other", number = 4)
+sol <- csolnp(pars = prob$start, fn = prob$fn, gr = prob$gr, eq = prob$eq_fn, eq_b = prob$eq_b, 
+              eq_jac = prob$eq_jac, ineq_fn = prob$ineq_fn, ineq_lower = prob$ineq_lower, 
+              ineq_upper = prob$ineq_upper, ineq_jac = prob$ineq_jac, lower = prob$lower,
+              upper = prob$upper)
+print(prob$name)
+print(c("convergence" = sol$convergence))
+print(c("csolnp objective" = sol$objective, "best objective" = prob$best_fn))
+print(sol$elapsed_time)
+```
+
+Finally, we take a look at a `solver-killer` problem, HS55 (from the Hock-Schittkowski suite),
+which poses the following challenges for NLP solvers:
+
+ * Extremely Flat Objective Near Optimum: The objective function in HS55 is nearly constant (very flat) near the solution, so gradients become very small and the solver can struggle to find a meaningful descent direction. This leads to slow progress or stalling.
+ * Tight and Nearly Active Nonlinear Constraints: The feasible region is defined by nonlinear constraints that are nearly active at the optimum, meaning any small move risks violating feasibility. This makes line search and step acceptance delicate.
+  * Ill-conditioning and Sensitivity: The combination of flatness and tight constraints results in an ill-conditioned optimization landscape. Small numerical errors or poorly scaled steps can cause the solver to jump out of the feasible region, or make the algorithm oscillate or stagnate.
+  * Difficult Constraint Jacobians: The constraint gradients in HS55 can be nearly linearly dependent or poorly scaled near the optimum, leading to numerical instability when solving the KKT system or updating multipliers.
+  * Slow Convergence/Failure to Converge: Many solvers take thousands of iterations and may still not converge to high accuracy, or may falsely report convergence with a suboptimal or infeasible solution.
+
+Instead of using `csolnp` which fails in this case, we try out the 
+`csolnp_ms` approach.
+
+
+```{r,warning=FALSE}
+prob <- solnp_problem_suite(number = 55)
+sol <- csolnp_ms(prob$fn, gr = prob$gr, eq_fn = prob$eq_fn, eq_b = prob$eq_b, 
+              eq_jac = prob$eq_jac, ineq_fn = prob$ineq_fn, ineq_lower = prob$ineq_lower, 
+              ineq_upper = prob$ineq_upper, ineq_jac = prob$ineq_jac, lower = prob$lower,
+              upper = prob$upper, n_candidates = 200, penalty = 1e5, 
+              control = list(min_iter = 1000, max_iter = 100, tol = 1e-8),
+              seed = 300)
+
+print(paste0("Solution : ", round(sol$objective,3), " | Best Objective :", round(prob$best_fn,3)))
+print(paste0("Equaility Violation : ", round(sol$kkt_diagnostics$eq_violation,3)))
+```
+
+The result is is not too bad, though the equality violation is still > 1e-6 which
+is what we were aiming for.
+
+
+## Differences with full Active-Set/SQP solvers
+
+Below is a short summary of the key differences between the SOLNP algorithm
+and full Active-set/SQP methods:
+
+| Aspect                | SOLNP                                    | Active-Set SQP / QP                  |
+|-----------------------|------------------------------------------|--------------------------------------|
+| Inequality handling   | Slacks, penalty, all treated equally     | Active set, complementarity enforced |
+| Subproblem            | Least squares (QR, no QP)                | Quadratic programming                |
+| KKT stationarity      | Not always enforced                      | Enforced at every step               |
+| Complementarity       | Not enforced                             | Enforced at every step               |
+| Scaling sensitivity   | Can be significant                       | Generally better                     |
+| Globalization         | Penalty parameter tuning crucial         | Line search/trust region, more robust|
+| Numerical behavior    | Simple, robust for easy problems         | More complex, better for hard ones   |
+
+
+
+## Conclusion
+
+The C++ rewrite of solnp, inclusion of analytic derivative options and the new
+test suite should hopefully elevate the quality of the Rsolnp package. Future
+enhancements will include expansion of the test suite and a deeper investigation
+into some of the underlying approaches used and ways to enhance the solver.
+
+
+## References
+

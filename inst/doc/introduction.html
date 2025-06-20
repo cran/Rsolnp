@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to SOLNP ver 2.0.0</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<style type="text/css">detaiks.chunk-details > summary.chunk-summary {
+text-align: right;
+}
+details.chunk-details[open] > summary.chunk-summary::after {
+content: "Hide";
+}
+details.chunk-details[open] > summary.chunk-summary > span.chunk-summary-text {
+display: none;
+}
+</style>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">
+
+div.csl-bib-body { }
+div.csl-entry {
+clear: both;
+margin-bottom: 0em;
+}
+.hanging div.csl-entry {
+margin-left:2em;
+text-indent:-2em;
+}
+div.csl-left-margin {
+min-width:2em;
+float:left;
+}
+div.csl-right-inline {
+margin-left:2em;
+padding-left:1em;
+}
+div.csl-indent {
+margin-left: 2em;
+}
+</style>
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+text-align: justify;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to SOLNP ver 2.0.0</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#problem-statement" id="toc-problem-statement">Problem
+Statement</a>
+<ul>
+<li><a href="#inequalities" id="toc-inequalities">Inequalities</a></li>
+<li><a href="#slack-variable-embedding" id="toc-slack-variable-embedding">Slack Variable Embedding</a></li>
+<li><a href="#optimization-via-augmented-lagrangian" id="toc-optimization-via-augmented-lagrangian">Optimization via
+Augmented Lagrangian</a></li>
+<li><a href="#no-stationarity-based-kkt-step" id="toc-no-stationarity-based-kkt-step">No Stationarity-Based KKT
+Step</a></li>
+<li><a href="#why-higher-tolerances-are-not-preferred" id="toc-why-higher-tolerances-are-not-preferred">Why Higher Tolerances
+Are Not Preferred</a></li>
+</ul></li>
+<li><a href="#c-version" id="toc-c-version">C++ Version</a></li>
+<li><a href="#multi-start-solver" id="toc-multi-start-solver">Multi-Start Solver</a></li>
+<li><a href="#test-suite" id="toc-test-suite">Test Suite</a></li>
+<li><a href="#differences-with-full-active-setsqp-solvers" id="toc-differences-with-full-active-setsqp-solvers">Differences with
+full Active-Set/SQP solvers</a></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+<li><a href="#references" id="toc-references">References</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The SOLNP algorithm, first proposed by <span class="citation">Ye
+(1989)</span>, is a Sequential Quadratic Programming (SQP) approach
+designed to solve general nonlinear optimization problems with both
+equality and inequality constraints. In 2010, it was implemented in R as
+the Rsolnp package, originally to fill the need for a robust and
+flexible constrained optimizer required by the author’s own GARCH
+modeling package, <a href="https://cran.r-project.org/package=rugarch">rugarch</a>. Since
+then, Rsolnp has remained one of the few readily available and
+user-friendly options for nonlinear constrained optimization in R.</p>
+<p>Despite the growth of R’s ecosystem in statistics and data science,
+the development and availability of modern nonlinear constrained
+optimization solvers in R has lagged behind other languages, with
+notable exceptions being <a href="https://cran.r-project.org/package=nloptr">nloptr</a> (which wraps
+NLopt solvers) and <a href="https://github.com/jyypma/ipoptr">ipoptr</a>
+(an R interface to the IPOPT solver)<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>. Moreover, in the nonlinear programming
+(NLP) space, most state-of-the-art solvers remain closed source and
+commercial, in contrast to other algorithmic advances that have
+transitioned from academia to open-source availability.</p>
+<p>Rsolnp does not claim to be competitive with commercial grade
+nonlinear solvers, but it has generally served its purpose reasonably
+well for small to medium sized problems.</p>
+</div>
+<div id="problem-statement" class="section level2">
+<h2>Problem Statement</h2>
+<p>The general nonlinear optimization problem addressed by SOLNP can be
+stated as follows:</p>
+<p><span class="math display">\[
+\begin{align}
+&amp; \min_{x \in \mathbb{R}^n} \quad f(x) \\\\
+&amp; \text{subject to:} \\\\
+&amp; \quad l_g \leq g(x) \leq u_g \qquad \text{(general inequality
+constraints)} \\\\
+&amp; \quad h(x) = B \qquad \text{(equality constraints with bound
+vector \(B\))} \\\\
+&amp; \quad x^L \leq x \leq x^U \qquad \text{(variable bounds)}
+\end{align}
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(f(x)\)</span>: Nonlinear objective
+function to minimize</li>
+<li><span class="math inline">\(g(x)\)</span>: Vector of general
+nonlinear inequality constraint functions, with lower and upper bounds
+<span class="math inline">\(l_g\)</span>, <span class="math inline">\(u_g\)</span></li>
+<li><span class="math inline">\(h(x)\)</span>: Vector of nonlinear
+equality constraint functions, required to be equal to vector B</li>
+<li><span class="math inline">\(x^L\)</span>, <span class="math inline">\(x^U\)</span>: Lower and upper bounds for the
+variables</li>
+</ul>
+<p>Note:</p>
+<ul>
+<li>Standard equality constraints of the form <span class="math inline">\(h(x) = 0\)</span> can be recovered by setting B =
+0.</li>
+<li>General inequality constraints allow for two-sided bounds (e.g.,
+<span class="math inline">\(l_g &lt; g(x) &lt; u_g\)</span>), not just
+upper or lower bounds individually.</li>
+</ul>
+<div id="inequalities" class="section level3">
+<h3>Inequalities</h3>
+<p>Each inequality constraint <span class="math inline">\(l_i \leq
+g_i(x) \leq u_i\)</span> is transformed into two equality constraints
+via slack variables. Introduce slack variable <span class="math inline">\(s_i \geq 0\)</span>, then define:</p>
+<p><span class="math display">\[
+h_i(x, s_i) = g_i(x) - s_i = l_i \quad \text{if } g_i(x) \geq l_i \\
+h_i(x, s_i) = g_i(x) + s_i = u_i \quad \text{if } g_i(x) \leq u_i
+\]</span></p>
+<p>This can be unified into:</p>
+<p><span class="math display">\[
+g_i(x) - s_i = l_i \quad \text{and} \quad g_i(x) + s_i = u_i
+\]</span></p>
+<p>So every bounded inequality becomes an equality constraint with a
+slack, and the slack becomes part of the optimization variable
+vector.</p>
+<p>In the actual implementation, if a constraint is double-bounded, a
+“penalty equality constraint” is introduced <span class="math inline">\(h_i(x, s_i) := g_i(x) - s_i = m_i\)</span> and add
+a penalty term to objective if <span class="math inline">\(s_i &lt;
+0\)</span>.</p>
+</div>
+<div id="slack-variable-embedding" class="section level3">
+<h3>Slack Variable Embedding</h3>
+<p>The augmented optimization vector becomes:</p>
+<p><span class="math inline">\(\tilde{x} = \begin{bmatrix} x \\ s
+\end{bmatrix}\)</span></p>
+<p>And the original constraints are reformulated into a system of
+equalities only:</p>
+<p><span class="math display">\[
+\tilde{g}(x, s) =
+\begin{bmatrix}
+g_{\text{eq}}(x) \\
+g_{\text{ineq}}(x) - s - l \\
+g_{\text{ineq}}(x) + s - u
+\end{bmatrix} = 0
+\]</span></p>
+</div>
+<div id="optimization-via-augmented-lagrangian" class="section level3">
+<h3>Optimization via Augmented Lagrangian</h3>
+<p>Unlike traditional SQP, SOLNP does not explicitly solve for the
+Karush–Kuhn–Tucker (KKT) conditions. Instead, it uses a partial
+augmented Lagrangian:</p>
+<p><span class="math display">\[
+L(x, \lambda, \rho) = f(x) + \lambda^\top g(x) + \frac{\rho}{2}
+\|g(x)\|^2
+\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(g(x)\)</span> contains only equality
+constraints (as inequalities are transformed)</li>
+<li><span class="math inline">\(\lambda\)</span> are Lagrange
+multipliers (estimated iteratively)</li>
+<li><span class="math inline">\(\rho\)</span> is the penalty
+parameter</li>
+</ul>
+</div>
+<div id="no-stationarity-based-kkt-step" class="section level3">
+<h3>No Stationarity-Based KKT Step</h3>
+<p>Unlike SQP or interior-point methods, SOLNP does not solve the full
+KKT system at each iteration, instead using:</p>
+<ul>
+<li>a quadratic local model</li>
+<li>a trust-region style step</li>
+<li>penalty-based adjustment (via <span class="math inline">\(\rho\)</span>)</li>
+</ul>
+<p>The stationarity check is only implicit in terms of convergence of
+<span class="math inline">\(\nabla f + J^\top \lambda \to 0\)</span>,
+not enforced directly.</p>
+</div>
+<div id="why-higher-tolerances-are-not-preferred" class="section level3">
+<h3>Why Higher Tolerances Are Not Preferred</h3>
+<p>Setting the tolerance in SOLNP (or augmented Lagrangian solvers) much
+tighter than 1e-8—such as 1e-12—can actually degrade solution quality
+because the algorithm becomes sensitive to numerical round-off and
+finite precision errors, especially in gradient and Hessian computations
+or matrix solves. As the tolerance approaches the limits of
+double-precision arithmetic, the solver may “chase noise” rather than
+real improvements, leading to erratic or even worse solutions, with
+unreliable convergence and possible violation of constraints. For most
+problems, practical and reliable results are achieved with tolerances in
+the 1e-6 to 1e-8 range.</p>
+</div>
+</div>
+<div id="c-version" class="section level2">
+<h2>C++ Version</h2>
+<p>The original solnp function did not make use of analytic gradients or
+Jacobians, and was written entirely in R, a direct translation from the
+Matlab code. Since version 2.0.0, a new function <code>csolnp</code>,
+written in C++<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> allows the user to provide analytic
+gradient and/or Jacobians for the inequality and equality constraints.
+In the absence of analytic functions, finite differences are used using
+the functions from the <a href="https://cran.r-project.org/package=numDeriv">numDeriv</a>
+package.</p>
+<p>The function signature for the csolnp function is now slightly
+different from that of solnp in both content and code styling:</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">args</span>(csolnp)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt; function (pars, fn, gr = NULL, eq_fn = NULL, eq_b = NULL, eq_jac = NULL, </span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt;     ineq_fn = NULL, ineq_lower = NULL, ineq_upper = NULL, ineq_jac = NULL, </span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt;     lower = NULL, upper = NULL, control = list(), use_r_version = FALSE, </span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt;     ...) </span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; NULL</span></span></code></pre></div>
+</details>
+<p>vs</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">args</span>(solnp)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="co">#&gt; function (pars, fun, eqfun = NULL, eqB = NULL, ineqfun = NULL, </span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt;     ineqLB = NULL, ineqUB = NULL, LB = NULL, UB = NULL, control = list(), </span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt;     ...) </span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; NULL</span></span></code></pre></div>
+</details>
+<p>Speedup of anywhere up to 10x can be expected for some problems.
+Additionally, certain enhancements have been made in the C++ code in
+regards to criteria for early termination to avoid stalling in the line
+search phase.</p>
+</div>
+<div id="multi-start-solver" class="section level2">
+<h2>Multi-Start Solver</h2>
+<p>A new function <code>csolnp_ms</code> implements a multi-start
+strategy, similar to the existing <code>gosolnp</code> function.
+However, it differs in the way starting candidate values are calculated,
+with the original function using rejection sampling to find feasible
+starting points, whilst the new function uses a combination of buffered
+box sampling and a fast interior-point feasibility projection. This
+approach efficiently generates initial values that strictly satisfy
+parameter bounds and nonlinear constraints by first sampling points
+slightly away from the boundaries and then rapidly projecting them into
+the feasible region using a penalized minimization. This results in more
+reliable and diverse initial candidates for multi-start optimization,
+especially in problems with complex or tightly constrained feasible
+regions.</p>
+</div>
+<div id="test-suite" class="section level2">
+<h2>Test Suite</h2>
+<p>As of version 2.0.0, a new test suite based on <span class="citation">Hock and Schittkowski (1980)</span> and <span class="citation">Schittkowski (2012)</span> has been included,
+translated from the Fortran codes <a href="https://klaus-schittkowski.de/tpnp.htm">here</a>. Currently, about
+60 problems of the 306 have been translated, and it is the intention of
+the author to eventually translate all the tests.</p>
+<p>Each test, returns a list with the following information:</p>
+<ul>
+<li>fn : the objective function</li>
+<li>gr : the analytic gradient function</li>
+<li>eq_fn : the equality function</li>
+<li>eq_b : the equality bounds</li>
+<li>eq_jac : the Jacobian of the equality function</li>
+<li>ineq_fn : the inequality function</li>
+<li>ineq_lower : the lower bounds for the inequalities</li>
+<li>ineq_upper : the upper bounds for the inequalities</li>
+<li>ineq_jac : the Jacobian of the inequality function</li>
+<li>lower : lower parameter bounds</li>
+<li>upper : upper parameter bounds</li>
+<li>start : initialization parameters</li>
+<li>best_fn : best known optimal objective</li>
+<li>best_par : best known optimal parameters</li>
+<li>name : test name</li>
+</ul>
+<p>The suite can be called at once or by reference to a specific test,
+as illustrated below.</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>prob <span class="ot">&lt;-</span> <span class="fu">solnp_problem_suite</span>(<span class="at">number =</span> <span class="dv">10</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>sol <span class="ot">&lt;-</span> <span class="fu">csolnp</span>(<span class="at">pars =</span> prob<span class="sc">$</span>start, <span class="at">fn =</span> prob<span class="sc">$</span>fn, <span class="at">gr =</span> prob<span class="sc">$</span>gr, <span class="at">eq =</span> prob<span class="sc">$</span>eq_fn, <span class="at">eq_b =</span> prob<span class="sc">$</span>eq_b, </span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>              <span class="at">eq_jac =</span> prob<span class="sc">$</span>eq_jac, <span class="at">ineq_fn =</span> prob<span class="sc">$</span>ineq_fn, <span class="at">ineq_lower =</span> prob<span class="sc">$</span>ineq_lower, </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>              <span class="at">ineq_upper =</span> prob<span class="sc">$</span>ineq_upper, <span class="at">ineq_jac =</span> prob<span class="sc">$</span>ineq_jac, <span class="at">lower =</span> prob<span class="sc">$</span>lower,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>              <span class="at">upper =</span> prob<span class="sc">$</span>upper)</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="co">#&gt; Warning in solnp_problem_setup(pars, fn, gr, eq_fn, eq_b, eq_jac, ineq_fn, : </span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co">#&gt; lower inequality values violated with initial pars.</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="fu">print</span>(prob<span class="sc">$</span>name)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a><span class="co">#&gt; [1] &quot;hs10&quot;</span></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="st">&quot;convergence&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>convergence))</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="co">#&gt; convergence </span></span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a><span class="co">#&gt;           0</span></span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="st">&quot;csolnp objective&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>objective, <span class="st">&quot;best objective&quot;</span> <span class="ot">=</span> prob<span class="sc">$</span>best_fn))</span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; csolnp objective   best objective </span></span>
+<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;       -0.9998931       -1.0000000</span></span>
+<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="fu">print</span>(sol<span class="sc">$</span>elapsed_time)</span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.005572796 secs</span></span></code></pre></div>
+</details>
+<p>We also test a more specific problem based on the GARCH(1,1) model
+with analytic derivatives:</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>prob <span class="ot">&lt;-</span> <span class="fu">solnp_problem_suite</span>(<span class="at">suite =</span> <span class="st">&quot;Other&quot;</span>, <span class="at">number =</span> <span class="dv">4</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>sol <span class="ot">&lt;-</span> <span class="fu">csolnp</span>(<span class="at">pars =</span> prob<span class="sc">$</span>start, <span class="at">fn =</span> prob<span class="sc">$</span>fn, <span class="at">gr =</span> prob<span class="sc">$</span>gr, <span class="at">eq =</span> prob<span class="sc">$</span>eq_fn, <span class="at">eq_b =</span> prob<span class="sc">$</span>eq_b, </span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>              <span class="at">eq_jac =</span> prob<span class="sc">$</span>eq_jac, <span class="at">ineq_fn =</span> prob<span class="sc">$</span>ineq_fn, <span class="at">ineq_lower =</span> prob<span class="sc">$</span>ineq_lower, </span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>              <span class="at">ineq_upper =</span> prob<span class="sc">$</span>ineq_upper, <span class="at">ineq_jac =</span> prob<span class="sc">$</span>ineq_jac, <span class="at">lower =</span> prob<span class="sc">$</span>lower,</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>              <span class="at">upper =</span> prob<span class="sc">$</span>upper)</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="fu">print</span>(prob<span class="sc">$</span>name)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; [1] &quot;garch&quot;</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="st">&quot;convergence&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>convergence))</span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt; convergence </span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt;           0</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="st">&quot;csolnp objective&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>objective, <span class="st">&quot;best objective&quot;</span> <span class="ot">=</span> prob<span class="sc">$</span>best_fn))</span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; csolnp objective   best objective </span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;          1074.36          1074.36</span></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="fu">print</span>(sol<span class="sc">$</span>elapsed_time)</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.01990199 secs</span></span></code></pre></div>
+</details>
+<p>Finally, we take a look at a <code>solver-killer</code> problem, HS55
+(from the Hock-Schittkowski suite), which poses the following challenges
+for NLP solvers:</p>
+<ul>
+<li>Extremely Flat Objective Near Optimum: The objective function in
+HS55 is nearly constant (very flat) near the solution, so gradients
+become very small and the solver can struggle to find a meaningful
+descent direction. This leads to slow progress or stalling.</li>
+<li>Tight and Nearly Active Nonlinear Constraints: The feasible region
+is defined by nonlinear constraints that are nearly active at the
+optimum, meaning any small move risks violating feasibility. This makes
+line search and step acceptance delicate.</li>
+<li>Ill-conditioning and Sensitivity: The combination of flatness and
+tight constraints results in an ill-conditioned optimization landscape.
+Small numerical errors or poorly scaled steps can cause the solver to
+jump out of the feasible region, or make the algorithm oscillate or
+stagnate.</li>
+<li>Difficult Constraint Jacobians: The constraint gradients in HS55 can
+be nearly linearly dependent or poorly scaled near the optimum, leading
+to numerical instability when solving the KKT system or updating
+multipliers.</li>
+<li>Slow Convergence/Failure to Converge: Many solvers take thousands of
+iterations and may still not converge to high accuracy, or may falsely
+report convergence with a suboptimal or infeasible solution.</li>
+</ul>
+<p>Instead of using <code>csolnp</code> which fails in this case, we try
+out the <code>csolnp_ms</code> approach.</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>prob <span class="ot">&lt;-</span> <span class="fu">solnp_problem_suite</span>(<span class="at">number =</span> <span class="dv">55</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a>sol <span class="ot">&lt;-</span> <span class="fu">csolnp_ms</span>(prob<span class="sc">$</span>fn, <span class="at">gr =</span> prob<span class="sc">$</span>gr, <span class="at">eq_fn =</span> prob<span class="sc">$</span>eq_fn, <span class="at">eq_b =</span> prob<span class="sc">$</span>eq_b, </span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a>              <span class="at">eq_jac =</span> prob<span class="sc">$</span>eq_jac, <span class="at">ineq_fn =</span> prob<span class="sc">$</span>ineq_fn, <span class="at">ineq_lower =</span> prob<span class="sc">$</span>ineq_lower, </span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a>              <span class="at">ineq_upper =</span> prob<span class="sc">$</span>ineq_upper, <span class="at">ineq_jac =</span> prob<span class="sc">$</span>ineq_jac, <span class="at">lower =</span> prob<span class="sc">$</span>lower,</span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a>              <span class="at">upper =</span> prob<span class="sc">$</span>upper, <span class="at">n_candidates =</span> <span class="dv">200</span>, <span class="at">penalty =</span> <span class="fl">1e5</span>, </span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>              <span class="at">control =</span> <span class="fu">list</span>(<span class="at">min_iter =</span> <span class="dv">1000</span>, <span class="at">max_iter =</span> <span class="dv">100</span>, <span class="at">tol =</span> <span class="fl">1e-8</span>),</span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>              <span class="at">seed =</span> <span class="dv">300</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">&quot;Solution : &quot;</span>, <span class="fu">round</span>(sol<span class="sc">$</span>objective,<span class="dv">3</span>), <span class="st">&quot; | Best Objective :&quot;</span>, <span class="fu">round</span>(prob<span class="sc">$</span>best_fn,<span class="dv">3</span>)))</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Solution : 6.257 | Best Objective :6.333&quot;</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">&quot;Equaility Violation : &quot;</span>, <span class="fu">round</span>(sol<span class="sc">$</span>kkt_diagnostics<span class="sc">$</span>eq_violation,<span class="dv">3</span>)))</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Equaility Violation : 0.172&quot;</span></span></code></pre></div>
+</details>
+<p>The result is is not too bad, though the equality violation is still
+&gt; 1e-6 which is what we were aiming for.</p>
+</div>
+<div id="differences-with-full-active-setsqp-solvers" class="section level2">
+<h2>Differences with full Active-Set/SQP solvers</h2>
+<p>Below is a short summary of the key differences between the SOLNP
+algorithm and full Active-set/SQP methods:</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="40%" />
+<col width="36%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Aspect</th>
+<th>SOLNP</th>
+<th>Active-Set SQP / QP</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Inequality handling</td>
+<td>Slacks, penalty, all treated equally</td>
+<td>Active set, complementarity enforced</td>
+</tr>
+<tr class="even">
+<td>Subproblem</td>
+<td>Least squares (QR, no QP)</td>
+<td>Quadratic programming</td>
+</tr>
+<tr class="odd">
+<td>KKT stationarity</td>
+<td>Not always enforced</td>
+<td>Enforced at every step</td>
+</tr>
+<tr class="even">
+<td>Complementarity</td>
+<td>Not enforced</td>
+<td>Enforced at every step</td>
+</tr>
+<tr class="odd">
+<td>Scaling sensitivity</td>
+<td>Can be significant</td>
+<td>Generally better</td>
+</tr>
+<tr class="even">
+<td>Globalization</td>
+<td>Penalty parameter tuning crucial</td>
+<td>Line search/trust region, more robust</td>
+</tr>
+<tr class="odd">
+<td>Numerical behavior</td>
+<td>Simple, robust for easy problems</td>
+<td>More complex, better for hard ones</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>The C++ rewrite of solnp, inclusion of analytic derivative options
+and the new test suite should hopefully elevate the quality of the
+Rsolnp package. Future enhancements will include expansion of the test
+suite and a deeper investigation into some of the underlying approaches
+used and ways to enhance the solver.</p>
+</div>
+<div id="references" class="section level2 unnumbered">
+<h2 class="unnumbered">References</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="ref-Hock1980" class="csl-entry">
+Hock, W, and K Schittkowski. 1980. <span>“Test Examples for Nonlinear
+Programming Codes.”</span> <em>Journal of Optimization Theory and
+Applications</em> 30 (1): 127–29.
+</div>
+<div id="ref-Schittkowski2012" class="csl-entry">
+Schittkowski, Klaus. 2012. <span>“More Test Examples for Nonlinear
+Programming Codes.”</span> <em>Lecture Notes in Economics and
+Mathematical Systems</em> 282.
+</div>
+<div id="ref-Ye1989" class="csl-entry">
+Ye, Yinyu. 1989. <em>SOLNP USERS’GUIDE</em>.
+</div>
+</div>
+</div>
+<div class="footnotes footnotes-end-of-document">
+<hr />
+<ol>
+<li id="fn1"><p>the latter is no longer available on CRAN due to
+licensing issues<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Using <a href="https://cran.r-project.org/package=Rcpp">Rcpp</a> and <a href="https://cran.r-project.org/package=RcppArmadillo">RcppArmadillo</a><a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

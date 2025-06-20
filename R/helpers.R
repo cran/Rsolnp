@@ -1,20 +1,3 @@
-#################################################################################
-##
-##   R package Rsolnp by Alexios Ghalanos and Stefan Theussl Copyright (C) 2009-2013
-##   This file is part of the R package Rsolnp.
-##
-##   The R package Rsolnp is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version.
-##
-##   The R package Rsolnp is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-#################################################################################
-
 .eps = .Machine$double.eps
 
 .subnpmsg = function(m){
@@ -56,7 +39,7 @@
 	}
 	if(!is.null(UB) && any(LB > UB))
 		stop("\nsolnp-->error: UB must be greater than LB\n", call. = FALSE)
-	
+
 	if(!is.null(UB) && any(LB == UB))
 		warning("\nsolnp-->warning: Equal Lower/Upper Bounds Found. Consider\n
 						excluding fixed parameters.\n", call. = FALSE)
@@ -68,7 +51,7 @@
 	if(!is.null(UB) && !any(is.finite(UB))){
 		idx = which(!is.finite(UB))
 		UB[idx] = sign(UB[idx])*.Machine$double.xmax/2
-	}	
+	}
 	assign(".LB", LB, envir = .env)
 	assign(".UB", UB, envir = .env)
 	return(1)
@@ -79,7 +62,7 @@
 	if(!is.function(fun)) stop("\nsolnp-->error: fun does not appear to be a function\n", call. = FALSE)
 	val = fun(pars, ...)
 	if(length(val) != 1)  stop("\nsolnp-->error: objective function returns value of length greater than 1!\n", call. = FALSE)
-	
+
 	assign(".solnp_fun", fun, envir = .env)
 	ctmp = get(".solnp_nfn", envir =  .env)
 	assign(".solnp_nfn", ctmp + 1, envir = .env)
@@ -96,7 +79,7 @@
 		warning(paste("\nsolnp-->warning: ", v , " detected in function call...check your function\n", sep = ""), immediate. = FALSE)
 		v = 1e24
 	}
-	v
+	as.numeric(v)
 }
 
 .checkgrad = function(pars, fun, .env, ...)
@@ -214,7 +197,7 @@
 # reporting function
 .report = function(iter, funv, pars)
 {
-	cat( paste( "\nIter: ", iter ," fn: ", format(funv, digits = 4, scientific = 5, nsmall = 4, zero.print = TRUE), "\t Pars: ", sep=""), 
+	cat( paste( "\nIter: ", iter ," fn: ", format(funv, digits = 4, scientific = 5, nsmall = 4, zero.print = TRUE), "\t Pars: ", sep=""),
 			format(pars, digits = 4, scientific = 6, nsmall = 5, zero.print = TRUE) )
 }
 
@@ -222,7 +205,7 @@
 .fdgrad = function(pars, fun, ...)
 {
 	if(!is.null(fun)){
-		
+
 		y0 = fun(pars, ...)
 		nx = length(pars)
 		grd = rep(0, nx)
@@ -331,14 +314,14 @@
 	return(sol)
 }
 
-.ones = function(n = 1, m = 1)
+.ones <- function(n = 1, m = 1)
 {
 	if(missing(m)) m = n
 	sol = matrix(1, nrow = n, ncol = m)
 	return(sol)
 }
 
-.vnorm = function(x)
+.vnorm <- function(x)
 {
 	sum((x)^2)^(1/2)
 }
