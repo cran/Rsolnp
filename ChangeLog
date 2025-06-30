@@ -1,3 +1,14 @@
+2025-06-30  Alexios Galanos <alexios@4dscape.com>
+  * DESCRIPTION (Version): New version is 2.0.1
+  * Some fixes to csolnp_ms for cases when no convergence in any runs.
+  * Added equality function to feasible initialization of multi-start (previously ignored it).
+  * Fix for early exit (iter = 1 with error code = 1). Relates to resetting vs zeroing out
+  the lagrange multipliers. Added both a check and removed resetting (just zeroing out now).
+  * Fix to C++ KKT diagnostics (to account for upper and lower bounds on inequalities)
+  * Added a kkt_diagnose function with print method to output a quick diagnostic
+  of the KKT conditions.
+  * Updated HS test suite to problem 64 (target all 306 in future releases).
+
 2025-06-18  Alexios Galanos <alexios@4dscape.com>
   * DESCRIPTION (Version): New version is 2.0.0
     * Added a C++ version of the solver which also optionally

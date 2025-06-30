@@ -319,7 +319,6 @@ Rcpp::List csubnp_cpp(subnp_state& s)
             delta_position = p - delta_position;
             bfgs_scaling_factors(0) = arma::as_scalar(delta_position.t() * augmented_hessian * delta_position);
             bfgs_scaling_factors(1) = arma::as_scalar(delta_position.t() * delta_gradient);
-
             if ((bfgs_scaling_factors(0) * bfgs_scaling_factors(1)) > 0) {
                 delta_position = augmented_hessian * delta_position;
                 augmented_hessian = augmented_hessian - (delta_position * delta_position.t()) / bfgs_scaling_factors(0)
@@ -350,6 +349,7 @@ Rcpp::List csubnp_cpp(subnp_state& s)
                 dx.subvec(mm, n_pic-1) = val * arma::ones<arma::vec>(n_pic - mm);
             }
         }
+
         step_interval_width = -1;
         lambda /= 10.0;
         // ToDo: add these as control options
@@ -366,6 +366,7 @@ Rcpp::List csubnp_cpp(subnp_state& s)
             if (!chol_success) {
                 return solnp_error_return(p, y, augmented_hessian, lambda, scaling_factors, n_eq, n_constraints, n_pars, n_constraints > 0, "Cholesky decomposition failed", nfeval, 1);
             }
+
             cz_temp = result.first;
             bool inv_success = false;
             try {
@@ -375,13 +376,12 @@ Rcpp::List csubnp_cpp(subnp_state& s)
                 cz_temp.reset();
                 inv_success = false;
             }
-
             if (!inv_success) {
                 return solnp_error_return(p, y, augmented_hessian, lambda, scaling_factors, n_eq, n_constraints, n_pars, n_constraints > 0, "Cholesky Matrix inversion failed", nfeval, 1);
             }
             delta_gradient = cz.t() * grad_augmented_obj;
-
             // || augmented_jacobian.n_rows == 0
+
             if (n_constraints == 0) {
                 u = -cz * delta_gradient;
             } else {
@@ -393,6 +393,7 @@ Rcpp::List csubnp_cpp(subnp_state& s)
                 y = result.first;
                 u = -cz * (delta_gradient - (cz.t() * augmented_jacobian.t()) * y);
             }
+
             working_params = u.subvec(0, n_pic-1) + p;
 
             if (setup[10] == 0) {  // R's setup[12], C++ is zero-based
@@ -535,6 +536,7 @@ Rcpp::List csubnp_cpp(subnp_state& s)
     if (n_constraints > 0) {
         y = scaling_factors(0) * y / scaling_factors.subvec(1, n_constraints);
     }
+
     arma::mat scaling_outer = scaling_factors.subvec(n_eq + 1, n_constraints + n_pars) * scaling_factors.subvec(n_eq + 1, n_constraints + n_pars).t(); // outer product
     augmented_hessian = scaling_factors(0) * augmented_hessian / scaling_outer;
 

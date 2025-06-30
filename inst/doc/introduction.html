@@ -632,7 +632,7 @@ as illustrated below.</p>
 <span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a><span class="co">#&gt; csolnp objective   best objective </span></span>
 <span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a><span class="co">#&gt;       -0.9998931       -1.0000000</span></span>
 <span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="fu">print</span>(sol<span class="sc">$</span>elapsed_time)</span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.005572796 secs</span></span></code></pre></div>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.005472183 secs</span></span></code></pre></div>
 </details>
 <p>We also test a more specific problem based on the GARCH(1,1) model
 with analytic derivatives:</p>
@@ -651,7 +651,7 @@ with analytic derivatives:</p>
 <span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt; csolnp objective   best objective </span></span>
 <span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a><span class="co">#&gt;          1074.36          1074.36</span></span>
 <span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="fu">print</span>(sol<span class="sc">$</span>elapsed_time)</span>
-<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.01990199 secs</span></span></code></pre></div>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Time difference of 0.01961708 secs</span></span></code></pre></div>
 </details>
 <p>Finally, we take a look at a <code>solver-killer</code> problem, HS55
 (from the Hock-Schittkowski suite), which poses the following challenges
@@ -690,9 +690,9 @@ out the <code>csolnp_ms</code> approach.</p>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>              <span class="at">seed =</span> <span class="dv">300</span>)</span>
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
 <span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">&quot;Solution : &quot;</span>, <span class="fu">round</span>(sol<span class="sc">$</span>objective,<span class="dv">3</span>), <span class="st">&quot; | Best Objective :&quot;</span>, <span class="fu">round</span>(prob<span class="sc">$</span>best_fn,<span class="dv">3</span>)))</span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Solution : 6.257 | Best Objective :6.333&quot;</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Solution : 7.669 | Best Objective :6.333&quot;</span></span>
 <span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">paste0</span>(<span class="st">&quot;Equaility Violation : &quot;</span>, <span class="fu">round</span>(sol<span class="sc">$</span>kkt_diagnostics<span class="sc">$</span>eq_violation,<span class="dv">3</span>)))</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Equaility Violation : 0.172&quot;</span></span></code></pre></div>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Equaility Violation : 1.041&quot;</span></span></code></pre></div>
 </details>
 <p>The result is is not too bad, though the equality violation is still
 &gt; 1e-6 which is what we were aiming for.</p>

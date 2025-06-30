@@ -95,7 +95,7 @@ solnp_problem_suite <- function(suite = "Hock-Schittkowski", number = 1, return_
 #' @details
 #' - All problem functions are expected to follow the naming convention
 #'   \sQuote{Problem_problem} (e.g., \sQuote{hs01_problem}).
-#' - For Hock-Schittkowski problems, numbers range from 1 to 50, with a few
+#' - For Hock-Schittkowski problems, numbers range from 1 to 64, with a few
 #'   selected extras (e.g., 110, 118, 119).
 #' - The \dQuote{Other} suite includes named problems like \sQuote{box},
 #'   \sQuote{alkylation}, \sQuote{entropy}, \sQuote{garch}, etc.,
@@ -113,8 +113,8 @@ solnp_problem_suite <- function(suite = "Hock-Schittkowski", number = 1, return_
 solnp_problems_table <- function()
 {
     hs_problems <- c("hs01","hs02","hs03","hs04","hs05","hs06","hs07",
-                     "hs08","hs09", paste0("hs",10:56),"hs110","hs118","hs119")
-    hs_number <- c(1:56,110,118,119)
+                     "hs08","hs09", paste0("hs",10:64),"hs110","hs118","hs119")
+    hs_number <- c(1:64,110,118,119)
     other_problems <- sort(c("alkylation","wright4","wright9","box","entropy","rosen_suzuki","powell",
                              "himmelblau5","garch"))
     other_number <- c(1:length(other_problems))

@@ -24,7 +24,7 @@ of other classic optimization problems.
 \itemize{
 \item All problem functions are expected to follow the naming convention
 \sQuote{Problem_problem} (e.g., \sQuote{hs01_problem}).
-\item For Hock-Schittkowski problems, numbers range from 1 to 50, with a few
+\item For Hock-Schittkowski problems, numbers range from 1 to 64, with a few
 selected extras (e.g., 110, 118, 119).
 \item The \dQuote{Other} suite includes named problems like \sQuote{box},
 \sQuote{alkylation}, \sQuote{entropy}, \sQuote{garch}, etc.,

@@ -329,3 +329,69 @@ csolnp <- function(pars, fn, gr = NULL, eq_fn = NULL, eq_b = NULL, eq_jac = NULL
   return(results)
 }
 
+
+#' Summarize KKT Condition Diagnostics
+#'
+#' Given a list of KKT diagnostic statistics (stationarity, feasibility, complementarity, etc.),
+#' this function prints a clear summary indicating which KKT conditions are satisfied at a specified tolerance.
+#'
+#' @param kkt A named list containing numeric entries for KKT diagnostics.
+#'        Required names are \code{"kkt_stationarity"}, \code{"eq_violation"},
+#'        \code{"ineq_violation"}, \code{"dual_feas_violation"}, \code{"compl_slackness"}.
+#' @param tol Numeric tolerance for considering a condition as "satisfied". Default is \code{1e-8}.
+#'
+#' @return An object of class "solnp_kkt_summary" (a data.frame with columns: condition, value, status, tol).
+#' @examples
+#' kkt <- list(
+#'   kkt_stationarity = 5.828909e-06,
+#'   eq_violation = 0,
+#'   ineq_violation = 0,
+#'   dual_feas_violation = 0.4380053,
+#'   compl_slackness = 0
+#' )
+#' kkt_diagnose(kkt, tol = 1e-8)
+#'
+#' @export
+kkt_diagnose <- function(kkt, tol = 1e-8) {
+  stopifnot(is.list(kkt))
+  required_names <- c(
+    "kkt_stationarity",
+    "eq_violation",
+    "ineq_violation",
+    "dual_feas_violation",
+    "compl_slackness"
+  )
+  missing <- setdiff(required_names, names(kkt))
+  if (length(missing) > 0)
+    stop("KKT diagnostic list is missing required element(s): ", paste(missing, collapse = ", "))
+
+  nulls <- vapply(kkt[required_names], is.null, logical(1))
+  if (any(nulls))
+    stop("KKT diagnostic contains NULL for: ", paste(required_names[nulls], collapse = ", "))
+
+  vals <- as.numeric(unlist(kkt[required_names]))
+  na_idx <- which(is.na(vals))
+  if (length(na_idx) > 0)
+    stop("KKT diagnostic contains NA for: ", paste(required_names[na_idx], collapse = ", "))
+
+  res <- data.frame(
+    condition = c("stationarity", "equality_violation", "inequality_violation", "dual_feasibility", "complementarity"),
+    value = as.numeric(unlist(kkt[required_names])),
+    status = ifelse(abs(as.numeric(unlist(kkt[required_names]))) <= tol, "OK", "FAIL"),
+    stringsAsFactors = FALSE
+  )
+  attr(res, "tolerance") <- tol
+  class(res) <- c("solnp_kkt_summary", class(res))
+  return(res)
+}
+
+#' @export
+print.solnp_kkt_summary <- function(x, ...) {
+  cat("KKT summary (tol =", attr(x, "tolerance"), "):\n")
+  for (i in seq_len(nrow(x))) {
+    cat(" -", x$condition[i], ":",
+        if (x$status[i] == "OK") "OK" else "FAIL",
+        sprintf("(|value| = %.2e)", abs(x$value[i])), "\n")
+  }
+  invisible(x)
+}

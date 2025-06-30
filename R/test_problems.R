@@ -2595,6 +2595,498 @@ hs56_problem <- function()
     )
 }
 
+hs57_problem <- function()
+{
+    A <- rep(0, 44); B <- rep(0, 44)
+
+    # Step 2: Fortran style assignments (copy the block structure)
+    A[1:2] <- 8; A[16+1:2] <- 18; A[30+1:2] <- 28; A[35+1:2] <- 32; A[38+1:2] <- 36; A[40+1:2] <- 38
+    B[1:2] <- 0.49; B[6+1:2] <- 0.46; B[11+1:2] <- 0.43; B[14+1:2] <- 0.43; B[18+1:2] <- 0.42
+    B[21+1:2] <- 0.41; B[25+1:2] <- 0.40; B[29+1:2] <- 0.41; B[36+1:2] <- 0.40; B[40+1:2] <- 0.40
+    B[42+1:2] <- 0.39
+    for (i in 1:3) {
+        A[10+i] <- 14;  A[13+i] <- 16;  A[18+i] <- 20
+        A[21+i] <- 22;  A[24+i] <- 24;  A[27+i] <- 26;  A[32+i] <- 30
+        B[31+i] <- 0.40
+    }
+    for (i in 1:4) {
+        A[2+i] <- 10; A[6+i] <- 12
+    }
+    A[38] <- 34; A[43] <- 40; A[44] <- 42
+    B[3] <- 0.48; B[4] <- 0.47; B[5] <- 0.48; B[6] <- 0.47; B[9] <- 0.45
+    B[10] <- 0.43; B[11] <- 0.45; B[14] <- 0.44; B[17] <- 0.46; B[18] <- 0.45
+    B[21] <- 0.43; B[24] <- 0.40; B[25] <- 0.42; B[28] <- 0.41; B[29] <- 0.40
+    B[35] <- 0.38; B[36] <- 0.41; B[39] <- 0.41; B[40] <- 0.38
+    fn <- function(x) {
+        F <- B - x[1] - (0.49 - x[1]) * exp(-x[2] * (A - 8))
+        sum(F^2)
+    }
+    gr <- function(x) {
+        F <- B - x[1] - (0.49 - x[1]) * exp(-x[2] * (A - 8))
+        V1 <- exp(-x[2] * (A - 8))
+        DF1 <- -1 + V1
+        DF2 <- (A - 8) * (0.49 - x[1]) * V1
+        g1 <- 2 * sum(F * DF1)
+        g2 <- 2 * sum(F * DF2)
+        c(g1, g2)
+    }
+    ineq_fn <- function(x) {
+        -x[1] * x[2] + 0.49 * x[2] - 0.09
+    }
+    ineq_jac <- function(x) {
+        matrix(c(-x[2], -x[1] + 0.49), nrow = 1)
+    }
+    lower <- c(0.4, -4)
+    upper <- c(1000, 1000)
+    start <- c(0.42, 5)
+    ineq_lower <- 0
+    ineq_upper <- 1e8
+    eq_fn <- NULL
+    eq_jac <- NULL
+    eq_b <- NULL
+    best_fn <- 0.0284596697213
+    best_par <- c(0.419952674511, 1.28484562930)
+    list(
+        name = "hs57",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs58_problem <- function()
+{
+    fn <- function(x) {
+        100 * (x[2] - x[1]^2)^2 + (1 - x[1])^2
+    }
+    gr <- function(x) {
+        g2 <- 200 * (x[2] - x[1]^2)
+        g1 <- -2 * (x[1] * (g2 - 1) + 1)
+        c(g1, g2)
+    }
+    ineq_fn <- function(x) {
+        c(x[2]^2 - x[1], x[1]^2 - x[2], x[1]^2 + x[2]^2 - 1)
+    }
+    ineq_jac <- function(x) {
+        matrix(c(-1, 2 * x[2],
+                 2 * x[1], -1,
+                 2 * x[1], 2 * x[2]), nrow = 3, byrow = TRUE)
+    }
+    lower <- c(-2, -1000)
+    upper <- c(0.5, 1000)
+    start <- c(-2, 1)
+    eq_fn <- NULL
+    eq_jac <- NULL
+    eq_b <- NULL
+    ineq_lower <- rep(0, 3)
+    ineq_upper <- rep(1e8, 3)
+    best_fn <- 3.19033354957
+    best_par <- c(-0.786150483331, 0.618034533851)
+    list(
+        name = "hs58",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs59_problem <- function()
+{
+    fn <- function(x) {
+        x1 <- x[1]; x2 <- x[2]
+        x11 <- x1; x12 <- x1^2; x13 <- x1^3; x14 <- x1^4
+        x21 <- x2; x22 <- x2^2; x23 <- x2^3; x24 <- x2^4
+        xx11 <- x1 * x2; xx12 <- x1 * x2^2; xx21 <- x1^2 * x2
+        xx31 <- x1^3 * x2
+        -75.196 + 3.8112 * x11 - 0.12694 * x12 + 2.0567e-3 * x13 - 1.0345e-5 * x14 +
+            6.8306 * x21 - 3.0234e-2 * x11 * x21 + 1.28134e-3 * x12 * x21 -
+            3.5256e-5 * x13 * x21 + 2.266e-7 * x14 * x21 -
+            0.25645 * x22 + 3.4604e-3 * x23 - 1.3514e-5 * x24 +
+            28.106 / (x21 + 1) + 5.2375e-6 * x12 * x22 + 6.3e-8 * x13 * x22 -
+            7e-10 * x13 * x23 - 3.4054e-4 * x11 * x22 + 1.6638e-6 * x11 * x23 +
+            2.8673 * exp(5e-4 * x11 * x21)
+    }
+    gr <- function(x) {
+        x1 <- x[1]; x2 <- x[2]
+        x11 <- x1; x12 <- x1^2; x13 <- x1^3; x14 <- x1^4
+        x21 <- x2; x22 <- x2^2; x23 <- x2^3
+        xx11 <- x1 * x2; xx12 <- x1 * x2^2; xx21 <- x1^2 * x2; xx31 <- x1^3 * x2
+
+        expterm <- exp(5e-4 * xx11)
+        g1 <- 3.8112 - 0.25388 * x1 + 6.1701e-3 * x12 - 4.138e-5 * x13 -
+            3.0234e-2 * x2 + 2.56268e-3 * xx11 - 1.05768e-4 * xx21 + 9.064e-7 * xx31 +
+            1.0475e-5 * xx12 + 1.89e-7 * x12 * x22 - 2.1e-9 * x12 * x23 -
+            3.4054e-4 * x22 + 1.6638e-6 * x23 + 1.43365e-3 * x2 * expterm
+        g2 <- 6.8306 - 3.0234e-2 * x1 + 1.28134e-3 * x12 - 3.5256e-5 * x13 +
+            2.266e-7 * x14 - 0.5129 * x2 + 1.03812e-2 * x22 - 5.4056e-5 * x23 - 28.106 / (x2 + 1)^2 +
+            1.0475e-5 * xx21 + 1.26e-7 * xx31 - 2.1e-9 * x13 * x22 - 6.8108e-4 * xx11 + 4.9914e-6 * xx12 +
+            1.43365e-3 * x1 * expterm
+        c(g1, g2)
+    }
+    ineq_fn <- function(x) {
+        c(x[1] * x[2] - 700, x[2] - 8e-3 * x[1]^2, (x[2] - 50)^2 - 5 * (x[1] - 55))
+    }
+    ineq_jac <- function(x) {
+        matrix(c(x[2], x[1],
+                 -1.6e-2 * x[1], 1,
+                 -5, 2 * (x[2] - 50)), nrow = 3, byrow = TRUE)
+    }
+    lower <- c(0, 0)
+    upper <- c(75, 65)
+    start <- c(90, 10)
+    ineq_lower <- rep(0, 3)
+    ineq_upper <- rep(1e8, 3)
+    eq_fn <- NULL
+    eq_jac <- NULL
+    eq_b <- NULL
+    best_fn <- -7.80422632408
+    best_par <- c(13.5501042366, 51.6601812877)
+    list(
+        name = "hs59",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs60_problem <- function()
+{
+    fn <- function(x) {
+        (x[1] - 1)^2 + (x[1] - x[2])^2 + (x[2] - x[3])^4
+    }
+    gr <- function(x) {
+        v1 <- 2 * (x[1] - x[2])
+        g1 <- 2 * (x[1] - 1) + v1
+        g3 <- -4 * (x[2] - x[3])^3
+        g2 <- -g3 - v1
+        c(g1, g2, g3)
+    }
+    eq_fn <- function(x) {
+        x[1] * (1 + x[2]^2) + x[3]^4 - 4 - 3 * sqrt(2)
+    }
+    eq_jac <- function(x) {
+        matrix(c(1 + x[2]^2, 2 * x[1] * x[2], 4 * x[3]^3), nrow = 1)
+    }
+    lower <- rep(-10, 3)
+    upper <- rep(10, 3)
+    start <- rep(2, 3)
+    eq_b <- 0
+    ineq_fn <- NULL
+    ineq_jac <- NULL
+    ineq_lower <- NULL
+    ineq_upper <- NULL
+    best_fn <- 0.0325682002513
+    best_par <- c(1.10485902423, 1.19667419413, 1.53526225739)
+    list(
+        name = "hs60",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs61_problem <- function()
+{
+    fn <- function(x) {
+        4 * x[1]^2 + 2 * x[2]^2 + 2 * x[3]^2 - 33 * x[1] + 16 * x[2] - 24 * x[3]
+    }
+    gr <- function(x) {
+        c(8 * x[1] - 33, 4 * x[2] + 16, 4 * x[3] - 24)
+    }
+    eq_fn <- function(x) {
+        c(3 * x[1] - 2 * x[2]^2 - 7, 4 * x[1] - x[3]^2 - 11)
+    }
+    eq_jac <- function(x) {
+        matrix(c(3, -4 * x[2], 0, 4, 0, -2 * x[3]), nrow = 2, byrow = TRUE)
+    }
+    lower <- rep(-1000, 3)
+    upper <- rep(1000, 3)
+    start <- c(0, 0, 0)
+    eq_b <- c(0, 0)
+    ineq_fn <- NULL
+    ineq_jac <- NULL
+    ineq_lower <- NULL
+    ineq_upper <- NULL
+    best_fn <- -143.646142201
+    best_par <- c(5.32677015744, -2.11899863998, 3.21046423906)
+    list(
+        name = "hs61",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs62_problem <- function()
+{
+    fn <- function(x) {
+        # Variable substitutions
+        B3 <- x[3] + 0.03
+        C3 <- 0.13 * x[3] + 0.03
+        B2 <- B3 + x[2]
+        C2 <- B3 + 0.07 * x[2]
+        B1 <- B2 + x[1]
+        C1 <- B2 + 0.09 * x[1]
+        V5 <- B1 / C1
+        V6 <- B2 / C2
+        V7 <- B3 / C3
+
+        if (V5 <= 0 || V6 <= 0 || V7 <= 0) {
+            # Penalty for infeasible region
+            S <- sum((x - 5)^2)
+            return(S + 1e3 - 2.67e4)
+        }
+
+        -32.174 * (255 * log(V5) + 280 * log(V6) + 290 * log(V7))
+    }
+    gr <- function(x) {
+        # Variable substitutions
+        B3 <- x[3] + 0.03
+        C3 <- 0.13 * x[3] + 0.03
+        B2 <- B3 + x[2]
+        C2 <- B3 + 0.07 * x[2]
+        B1 <- B2 + x[1]
+        C1 <- B2 + 0.09 * x[1]
+        # Reciprocals
+        RB1 <- 1 / B1
+        RB2 <- 1 / B2
+        RB3 <- 1 / B3
+        RC1 <- 1 / C1
+        RC2 <- 1 / C2
+        RC3 <- 1 / C3
+        V1 <- -32.174 * 255
+        V2 <- -32.174 * 280
+        V3 <- -32.174 * 290
+        V4 <- V1 * (RB1 - RC1)
+
+        # Gradient (as per Fortran)
+        g1 <- V1 * (RB1 - 0.09 * RC1)
+        g2 <- V4 + V2 * (RB2 - 0.07 * RC2)
+        g3 <- V4 + V2 * (RB2 - RC2) + V3 * (RB3 - 0.13 * RC3)
+        c(g1, g2, g3)
+    }
+    eq_fn <- function(x) {
+        sum(x) - 1
+    }
+    eq_jac <- function(x) {
+        matrix(rep(1, 3), nrow = 1)
+    }
+    lower <- rep(0, 3)
+    upper <- rep(1, 3)
+    start <- c(0.7, 0.2, 0.1)
+    eq_b <- 0
+    ineq_fn <- NULL
+    ineq_jac <- NULL
+    ineq_lower <- NULL
+    ineq_upper <- NULL
+    best_fn <- -26272.5144873
+    best_par <- c(0.617813298210, 0.328202155786, 0.0539845460119)
+    list(
+        name = "hs62",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs63_problem <- function()
+{
+    fn <- function(x) {
+        1e3 - x[1]^2 - 2 * x[2]^2 - x[3]^2 - x[1] * x[2] - x[1] * x[3]
+    }
+    gr <- function(x) {
+        c(-2 * x[1] - x[2] - x[3], -4 * x[2] - x[1], -2 * x[3] - x[1])
+    }
+    eq_fn <- function(x) {
+        c(8 * x[1] + 14 * x[2] + 7 * x[3] - 56,
+          x[1]^2 + x[2]^2 + x[3]^2 - 25)
+    }
+    eq_jac <- function(x) {
+        matrix(c(8, 14, 7, 2 * x[1], 2 * x[2], 2 * x[3]),nrow = 2, byrow = TRUE)
+    }
+    lower <- rep(0, 3)
+    upper <- rep(1000, 3)
+    start <- rep(2, 3)
+    eq_b <- c(0, 0)
+    ineq_fn <- NULL
+    ineq_jac <- NULL
+    ineq_lower <- NULL
+    ineq_upper <- NULL
+    best_fn <- 961.715172127
+    best_par <- c(3.51211841492, 0.216988174172, 3.55217403459)
+    list(
+        name = "hs63",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs64_problem <- function()
+{
+    fn <- function(x) {
+        5 * x[1] + 5e4 / x[1] + 20 * x[2] + 7.2e4 / x[2] + 10 * x[3] + 1.44e5 / x[3]
+    }
+    gr <- function(x) {
+        c(5 - 5e4 / x[1]^2, 20 - 7.2e4 / x[2]^2, 10 - 1.44e5 / x[3]^2)
+    }
+    ineq_fn <- function(x) {
+        1 - 4 / x[1] - 32 / x[2] - 120 / x[3]
+    }
+    ineq_jac <- function(x) {
+        matrix(c(4 / x[1]^2, 32 / x[2]^2, 120 / x[3]^2), nrow = 1)
+    }
+    lower <- rep(1e-5, 3)
+    upper <- rep(1000, 3)
+    start <- rep(1, 3)
+    eq_fn <- NULL
+    eq_jac <- NULL
+    eq_b <- NULL
+    ineq_lower <- 0
+    ineq_upper <- 1e8
+    best_fn <- 6299.84242821
+    best_par <- c(108.734717597, 85.1261394257, 204.324707858)
+    list(
+        name = "hs64",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
+hs65_problem <- function()
+{
+    fn <- function(x) {
+        (x[1] - x[2])^2 + ((x[1] + x[2] - 10)/3)^2 + (x[3] - 5)^2
+    }
+    gr <- function(x) {
+        v1 <- 2 * (x[1] - x[2])
+        v2 <- 2 * (x[1] + x[2] - 10) / 9
+        c(v1 + v2, -v1 + v2, 2 * (x[3] - 5))
+    }
+    ineq_fn <- function(x) {
+        48 - x[1]^2 - x[2]^2 - x[3]^2
+    }
+    ineq_jac <- function(x) {
+        matrix(c(-2 * x[1], -2 * x[2], -2 * x[3]), nrow = 1)
+    }
+    lower <- c(-4.5, -4.5, -5)
+    upper <- c(4.5, 4.5, 5)
+    start <- c(-5, 5, 0)
+    eq_fn <- NULL
+    eq_jac <- NULL
+    eq_b <- NULL
+    ineq_lower <- 0
+    ineq_upper <- 1e8
+    best_fn <- 0.953528856757
+    best_par <- c(3.65046182158, 3.65046168940, 4.62041750754)
+    list(
+        name = "hs65",
+        fn = fn,
+        gr = gr,
+        eq_fn = eq_fn,
+        eq_b = eq_b,
+        eq_jac = eq_jac,
+        ineq_fn = ineq_fn,
+        ineq_jac = ineq_jac,
+        ineq_lower = ineq_lower,
+        ineq_upper = ineq_upper,
+        lower = lower,
+        upper = upper,
+        start = start,
+        best_fn = best_fn,
+        best_par = best_par
+    )
+}
+
 alkylation_problem <- function() {
     fn <- function(x) {
         -0.63 * x[4] * x[7] + 50.4 * x[1] + 3.5 * x[2] + x[3] + 33.6 * x[5]

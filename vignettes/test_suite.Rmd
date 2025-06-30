@@ -1,0 +1,95 @@
+---
+title: "SOLNP Test Suite"
+output: 
+    rmarkdown::html_vignette:
+        css: custom.css
+        code_folding: hide
+        citation_package: natbib
+        toc: yes
+bibliography: references.bib
+bibliography-style: apalike
+natbiboptions: round
+vignette: >
+  %\VignetteIndexEntry{SOLNP Test Suite}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(Rsolnp)
+```
+
+## Introduction
+
+
+The purpose of the new SOLNP Test Suite is to provide a comprehensive, 
+standardized environment for benchmarking and validating nonlinear optimization 
+algorithms, with a particular focus on the SOLNP family of solvers. The suite is 
+anchored around the well-known Hock-Schittkowski (HS) test problems, a diverse 
+collection of nonlinear programming challenges that have become a benchmark 
+standard in the optimization literature.
+
+This suite currently implements 64 of the HS problems, spanning a range of 
+complexities, constraint types, and objective function characteristics. Future 
+updates will expand coverage to include the entire set of 306 Hock-Schittkowski 
+problems, ensuring a thorough and robust testing ground for both algorithmic 
+development and comparative analysis.
+
+The problems are currently stored in a form compatible with the SOLNP solver, 
+enabling immediate use for benchmarking and analysis. However, recognizing that 
+nonlinear programming (NLP) problems can be specified in various formats—sometimes 
+with differing conventions for constraints, bounds, and objective function 
+representation—the suite includes a utility function called `solnp_standardize_problem`
+which rewrites the test in the NLP standard form (e.g. as used by [nloptr](https://CRAN.R-project.org/package=nloptr)).
+
+A distinctive feature of several HS problems is that their optimal solutions 
+often occur on or very near the boundary of the feasible region, where one or more 
+inequality constraints are active. In other words, the optimal solution frequently 
+coincides with points where the constraints are "tight", and further movement 
+would violate feasibility.
+
+This aspect is of particular importance for algorithm development, as it tests 
+a solver's ability to:
+
+  * Correctly identify the active set of constraints at the optimum,
+  * Handle boundary solutions robustly, and
+  * Maintain numerical stability and feasibility in the presence of active inequality constraints.
+
+It should be noted that SOLNP does not employ an active set strategy. Instead, 
+its augmented Lagrangian approach treats constraints via penalty terms, and the 
+optimizer does not explicitly identify or maintain sets of active constraints 
+during the iterations. As a result, SOLNP solutions typically remain in the 
+interior of the feasible region whenever possible, only approaching the boundary 
+when required for optimality.
+
+
+
+## Usage
+
+The function `solnp_problems_table` lists the problem currently implemented:
+
+```{r}
+head(solnp_problems_table())
+```
+
+
+whilst the function `solnp_problem_suite` can either return a specific problem
+or all problems within a Suite:
+
+```{r}
+prob <- solnp_problem_suite(suite = "Hock-Schittkowski", number = 60)
+sol <- csolnp(prob$start, fn = prob$fn, gr = prob$gr, eq_fn = prob$eq_fn, 
+              eq_b = prob$eq_b, eq_jac = prob$eq_jac, ineq_fn = prob$ineq_fn, 
+              ineq_lower = prob$ineq_lower, ineq_upper = prob$ineq_upper, 
+              ineq_jac = prob$ineq_jac, lower = prob$lower, upper = prob$upper, 
+              control = list(trace = 0, min_iter = 1000, max_iter = 300, tol = 1e-8, rho = 1))
+print(c("solnp" = sol$objective, "benchmark" = prob$best_fn))
+print(rbind("solnp" = sol$pars, "benchmark" = prob$best_par))
+```

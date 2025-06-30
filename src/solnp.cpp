@@ -158,6 +158,7 @@ Rcpp::List csolnp(Rcpp::List state) {
 
         // 7. Extract current parameters from augmented vector
         arma::vec current_parameters = augmented_parameters.subvec(n_ineq, n_ineq + num_parameters - 1);
+
         step_norm = arma::norm(current_parameters - previous_parameters, 2);
         previous_parameters = current_parameters;
 
@@ -212,30 +213,32 @@ Rcpp::List csolnp(Rcpp::List state) {
             }
             // Norm of constraint violations
             status_vector(2) = vnorm(current_constraint_violations);
-            grad_norm = compute_stationarity(current_parameters, lagrange_mults, n_eq, n_ineq, gradient_fun, eq_j, ineq_j);
-            // Penalty parameter logic
-            // if (status_vector(2) < 10 * tol) {
-            //     penalty_param = 0;
-            //     lambda = std::min(lambda, tol);
-            // }
-            // if (status_vector(2) < 5 * status_vector(1)) {
-            //     penalty_param /= 5.0;
-            // }
-            // if (status_vector(2) > 10 * status_vector(1)) {
-            //     penalty_param = 5.0 * std::max(penalty_param, std::sqrt(tol));
-            // }
-            if (status_vector(2) < tol && grad_norm < gtol) {
-              penalty_param = 0;
-              lambda = std::min(lambda, tol);
-            } else {
-              if (status_vector(2) < 5 * status_vector(1)) {
-                penalty_param = std::max(penalty_param / 5.0, min_penalty);
+            if (error_code == 0) {
+              grad_norm = compute_stationarity(current_parameters, lagrange_mults, n_eq, n_ineq, gradient_fun, eq_j, ineq_j);
+              if (status_vector(2) < tol && grad_norm < gtol) {
+                penalty_param = 0;
+                lambda = std::min(lambda, tol);
+              } else {
+                if (status_vector(2) < 5 * status_vector(1)) {
+                  penalty_param = std::max(penalty_param / 5.0, min_penalty);
+                }
+                if (status_vector(2) > 10 * status_vector(1)) {
+                  penalty_param = 5.0 * std::max(penalty_param, min_penalty);
+                }
               }
-              if (status_vector(2) > 10 * status_vector(1)) {
-                penalty_param = 5.0 * std::max(penalty_param, min_penalty);
+            } else {
+              if (status_vector(2) < tol) {
+                penalty_param = 0;
+                lambda = std::min(lambda, tol);
+              } else {
+                if (status_vector(2) < 5 * status_vector(1)) {
+                  penalty_param = std::max(penalty_param / 5.0, min_penalty);
+                }
+                if (status_vector(2) > 10 * status_vector(1)) {
+                  penalty_param = 5.0 * std::max(penalty_param, min_penalty);
+                }
               }
             }
-
             if (penalty_param == 0 && status_vector(2) > tol) {
               penalty_param = std::max(1.0, min_penalty);
               if (trace > 0) {
@@ -275,11 +278,9 @@ Rcpp::List csolnp(Rcpp::List state) {
     // } else {
     //   best_feas_obj = current_objective_value;
     // }
-
     arma::vec optimal_parameters = augmented_parameters.subvec(n_ineq, n_ineq + num_parameters - 1);
     Rcpp::List kkt_diagnostics = compute_kkt_diagnostics(optimal_parameters, lagrange_mults, n_eq, n_ineq,
-                                                         gradient_fun, eq_j, ineq_j, eq_f, ineq_f, tol);
-
+                                                         gradient_fun, eq_j, ineq_j, eq_f, ineq_f, ineq_lower, ineq_upper, tol, error_code);
     // --- Return results ---
     return Rcpp::List::create(
         Rcpp::_["parameters"] = augmented_parameters,

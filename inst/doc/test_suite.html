@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>SOLNP Test Suite</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<style type="text/css">detaiks.chunk-details > summary.chunk-summary {
+text-align: right;
+}
+details.chunk-details[open] > summary.chunk-summary::after {
+content: "Hide";
+}
+details.chunk-details[open] > summary.chunk-summary > span.chunk-summary-text {
+display: none;
+}
+</style>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+text-align: justify;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">SOLNP Test Suite</h1>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#usage" id="toc-usage">Usage</a></li>
+</ul>
+</div>
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>The purpose of the new SOLNP Test Suite is to provide a
+comprehensive, standardized environment for benchmarking and validating
+nonlinear optimization algorithms, with a particular focus on the SOLNP
+family of solvers. The suite is anchored around the well-known
+Hock-Schittkowski (HS) test problems, a diverse collection of nonlinear
+programming challenges that have become a benchmark standard in the
+optimization literature.</p>
+<p>This suite currently implements 64 of the HS problems, spanning a
+range of complexities, constraint types, and objective function
+characteristics. Future updates will expand coverage to include the
+entire set of 306 Hock-Schittkowski problems, ensuring a thorough and
+robust testing ground for both algorithmic development and comparative
+analysis.</p>
+<p>The problems are currently stored in a form compatible with the SOLNP
+solver, enabling immediate use for benchmarking and analysis. However,
+recognizing that nonlinear programming (NLP) problems can be specified
+in various formats—sometimes with differing conventions for constraints,
+bounds, and objective function representation—the suite includes a
+utility function called <code>solnp_standardize_problem</code> which
+rewrites the test in the NLP standard form (e.g. as used by <a href="https://CRAN.R-project.org/package=nloptr">nloptr</a>).</p>
+<p>A distinctive feature of several HS problems is that their optimal
+solutions often occur on or very near the boundary of the feasible
+region, where one or more inequality constraints are active. In other
+words, the optimal solution frequently coincides with points where the
+constraints are “tight”, and further movement would violate
+feasibility.</p>
+<p>This aspect is of particular importance for algorithm development, as
+it tests a solver’s ability to:</p>
+<ul>
+<li>Correctly identify the active set of constraints at the
+optimum,</li>
+<li>Handle boundary solutions robustly, and</li>
+<li>Maintain numerical stability and feasibility in the presence of
+active inequality constraints.</li>
+</ul>
+<p>It should be noted that SOLNP does not employ an active set strategy.
+Instead, its augmented Lagrangian approach treats constraints via
+penalty terms, and the optimizer does not explicitly identify or
+maintain sets of active constraints during the iterations. As a result,
+SOLNP solutions typically remain in the interior of the feasible region
+whenever possible, only approaching the boundary when required for
+optimality.</p>
+</div>
+<div id="usage" class="section level2">
+<h2>Usage</h2>
+<p>The function <code>solnp_problems_table</code> lists the problem
+currently implemented:</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">head</span>(<span class="fu">solnp_problems_table</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="co">#&gt;               Suite Problem Number</span></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="co">#&gt; 1 Hock-Schittkowski    hs01      1</span></span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co">#&gt; 2 Hock-Schittkowski    hs02      2</span></span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="co">#&gt; 3 Hock-Schittkowski    hs03      3</span></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="co">#&gt; 4 Hock-Schittkowski    hs04      4</span></span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; 5 Hock-Schittkowski    hs05      5</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="co">#&gt; 6 Hock-Schittkowski    hs06      6</span></span></code></pre></div>
+</details>
+<p>whilst the function <code>solnp_problem_suite</code> can either
+return a specific problem or all problems within a Suite:</p>
+<details class="chunk-details"><summary class="chunk-summary"><span class="chunk-summary-text">Code</span></summary>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>prob <span class="ot">&lt;-</span> <span class="fu">solnp_problem_suite</span>(<span class="at">suite =</span> <span class="st">&quot;Hock-Schittkowski&quot;</span>, <span class="at">number =</span> <span class="dv">60</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>sol <span class="ot">&lt;-</span> <span class="fu">csolnp</span>(prob<span class="sc">$</span>start, <span class="at">fn =</span> prob<span class="sc">$</span>fn, <span class="at">gr =</span> prob<span class="sc">$</span>gr, <span class="at">eq_fn =</span> prob<span class="sc">$</span>eq_fn, </span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>              <span class="at">eq_b =</span> prob<span class="sc">$</span>eq_b, <span class="at">eq_jac =</span> prob<span class="sc">$</span>eq_jac, <span class="at">ineq_fn =</span> prob<span class="sc">$</span>ineq_fn, </span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>              <span class="at">ineq_lower =</span> prob<span class="sc">$</span>ineq_lower, <span class="at">ineq_upper =</span> prob<span class="sc">$</span>ineq_upper, </span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>              <span class="at">ineq_jac =</span> prob<span class="sc">$</span>ineq_jac, <span class="at">lower =</span> prob<span class="sc">$</span>lower, <span class="at">upper =</span> prob<span class="sc">$</span>upper, </span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>              <span class="at">control =</span> <span class="fu">list</span>(<span class="at">trace =</span> <span class="dv">0</span>, <span class="at">min_iter =</span> <span class="dv">1000</span>, <span class="at">max_iter =</span> <span class="dv">300</span>, <span class="at">tol =</span> <span class="fl">1e-8</span>, <span class="at">rho =</span> <span class="dv">1</span>))</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">c</span>(<span class="st">&quot;solnp&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>objective, <span class="st">&quot;benchmark&quot;</span> <span class="ot">=</span> prob<span class="sc">$</span>best_fn))</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt;     solnp benchmark </span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; 0.0325682 0.0325682</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">rbind</span>(<span class="st">&quot;solnp&quot;</span> <span class="ot">=</span> sol<span class="sc">$</span>pars, <span class="st">&quot;benchmark&quot;</span> <span class="ot">=</span> prob<span class="sc">$</span>best_par))</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt;               [,1]     [,2]     [,3]</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt; solnp     1.104859 1.196674 1.535262</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt; benchmark 1.104859 1.196674 1.535262</span></span></code></pre></div>
+</details>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
